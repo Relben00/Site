@@ -11,16 +11,21 @@ let currentFilter = 'all';
 let isSorted = false;
 
 // Получаем элементы DOM
-const authModal = document.getElementById('authModal');
-const closeAuthModal = document.getElementById('closeAuthModal');
-const loginForm = document.getElementById('loginForm');
-const registerForm = document.getElementById('registerForm');
-const switchToRegister = document.getElementById('switchToRegister');
-const switchToLogin = document.getElementById('switchToLogin');
-const loginButton = document.getElementById('loginButton');
-const registerButton = document.getElementById('registerButton');
-const loginError = document.getElementById('loginError');
-const registerError = document.getElementById('registerError');
+// Добавьте в начало где другие DOM-элементы
+const addButton = document.getElementById('addButton');
+const sortButton = document.getElementById('sortButton');
+const filterButton = document.getElementById('filterButton');
+const filterOptions = document.getElementById('filterOptions');
+const searchBox = document.getElementById('searchBox');
+const itemModal = document.getElementById('itemModal');
+const deleteModal = document.getElementById('deleteModal');
+const closeModal = document.getElementById('closeModal');
+const closeDeleteModal = document.getElementById('closeDeleteModal');
+const saveItem = document.getElementById('saveItem');
+const cancelDelete = document.getElementById('cancelDelete');
+const confirmDelete = document.getElementById('confirmDelete');
+const gallery = document.getElementById('gallery');
+const modalTitle = document.getElementById('modalTitle');
 
 // Обработчик кнопки аутентификации
 authButton.addEventListener('click', () => {
@@ -128,13 +133,12 @@ async function logout() {
         // Обновляем UI
         authButton.textContent = 'Войти';
         authButton.removeEventListener('click', logout);
-        authButton.addEventListener('click', () => {
-            authModal.style.display = 'block';
-        });
+        authButton.addEventListener('click', showAuthModal); // Используем функцию showAuthModal напрямую
         
-        // Загружаем данные из localStorage
-        loadFromLocalStorage();
-        
+        // Добавить перезагрузку для полной очистки сессии
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
     } catch (error) {
         console.error('Ошибка при выходе:', error);
     }
@@ -393,6 +397,77 @@ confirmDelete.addEventListener('click', async () => {
     renderGallery();
     deleteModal.style.display = 'none';
 });
+
+// Добавьте обработчики для модальных окон
+closeModal.addEventListener('click', () => {
+    itemModal.style.display = 'none';
+});
+
+closeDeleteModal.addEventListener('click', () => {
+    deleteModal.style.display = 'none';
+});
+
+cancelDelete.addEventListener('click', () => {
+    deleteModal.style.display = 'none';
+});
+
+// Функция для удаления элемента из Supabase
+async function deleteItemFromSupabase(id) {
+    try {
+        const { error } = await supabaseClient
+            .from('gallery_items')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+        console.log('Элемент успешно удален из Supabase');
+    } catch (error) {
+        console.error('Ошибка при удалении из Supabase:', error);
+        alert('Не удалось удалить данные из облака. Данные удалены только локально.');
+    }
+}
+
+// Функция для сортировки элементов
+function sortItems(items) {
+    return [...items].sort((a, b) => {
+        const titleA = a.title.trim().toLowerCase();
+        const titleB = b.title.trim().toLowerCase();
+        
+        const typeA = getCharType(titleA);
+        const typeB = getCharType(titleB);
+        
+        const typeOrder = {
+            'symbol': 1,
+            'english': 2,
+            'russian': 3,
+            'other': 4
+        };
+        
+        if (typeOrder[typeA] !== typeOrder[typeB]) {
+            return typeOrder[typeA] - typeOrder[typeB];
+        }
+        
+        return titleA.localeCompare(titleB);
+    });
+}
+
+// Функция для определения типа первого символа в строке
+function getCharType(str) {
+    if (!str || str.length === 0) return 'other';
+    
+    const firstChar = str.charAt(0).toLowerCase();
+    
+    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?0-9]/.test(firstChar)) {
+        return 'symbol';
+    }
+    if (/[a-z]/.test(firstChar)) {
+        return 'english';
+    }
+    if (/[а-яё]/.test(firstChar)) {
+        return 'russian';
+    }
+    return 'other';
+}
 
 // Функция для открытия страницы элемента
 function openItemPage(id) {
