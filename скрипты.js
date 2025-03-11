@@ -480,12 +480,16 @@ confirmDelete.addEventListener('click', async () => {
     // Удаляем элемент из массива
     items = items.filter(item => item.id !== id);
 
-    // Проверяем, авторизован ли пользователь
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    
-    if (user) {
-        // Удаляем из Supabase
-        await deleteItemFromSupabase(id);
+    try {
+        // Проверяем, авторизован ли пользователь
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        
+        if (user) {
+            // Удаляем из Supabase
+            await deleteItemFromSupabase(id);
+        }
+    } catch (error) {
+        console.error("Error during delete:", error);
     }
     
     // Обновляем localStorage в любом случае
