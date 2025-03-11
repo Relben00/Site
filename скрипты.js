@@ -4,6 +4,17 @@ const SUPABASE_URL = 'https://lfrkxefyupvaascdnotz.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxmcmt4ZWZ5dXB2YWFzY2Rub3R6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2NTUzMDcsImV4cCI6MjA1NzIzMTMwN30.Uum8Otz649sgbiLOGa9hdbsoLPya0CIuYQHk5mHJpwU';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Проверка подключения
+(async function testConnection() {
+    try {
+        const { data, error } = await supabaseClient.from('gallery_items').select('count');
+        if (error) throw error;
+        console.log("Supabase connected successfully");
+    } catch (err) {
+        console.error("Supabase connection error:", err);
+    }
+})();
+
 // Массив для хранения элементов
 let items = [];
 let filteredItems = [];
@@ -227,30 +238,53 @@ registerButton.addEventListener('click', async () => {
     }
 });
 
-// Функция для сохранения элемента в Supabase
+// Улучшенная функция для сохранения элемента в Supabase
 async function saveItemToSupabase(item) {
-    console.log("Saving item to Supabase:", item.id);
+    console.log("Saving item to Supabase:", item);
     try {
-        // Преобразуем объект для соответствия структуре БД
-        const { error } = await supabaseClient
+        // Проверяем структуру данных
+        if (!item || typeof item !== 'object' || !item.id) {
+            throw new Error("Invalid item data");
+        }
+
+        // Адаптируем данные для БД - приводим формат к структуре БД
+        const formattedItem = {
+            id: item.id,
+            title: item.title,
+            imageUrl: item.imageUrl,  // Убедитесь что в БД колонка называется именно так
+            content: item.content || ''
+        };
+
+        console.log("Formatted item for Supabase:", formattedItem);
+
+        // Используем insert с опцией upsert для обновления существующих элементов
+        const { data, error } = await supabaseClient
             .from('gallery_items')
-            .upsert([item], { 
-                onConflict: 'id'
+            .upsert([formattedItem], { 
+                onConflict: 'id',
+                returning: 'minimal' // Не возвращаем данные для экономии трафика
             });
         
         if (error) {
-            console.error("Supabase save error:", error);
+            console.error("Supabase save error details:", error);
             throw error;
         }
         
         console.log('Данные успешно сохранены в Supabase');
-        // Резервное сохранение
-        localStorage.setItem('galleryItems', JSON.stringify(items));
         return true;
     } catch (error) {
-        console.error('Ошибка при сохранении в Supabase:', error);
-        alert('Не удалось сохранить данные в облаке. Данные сохранены локально.');
-        localStorage.setItem('galleryItems', JSON.stringify(items));
+        console.error('Полная ошибка при сохранении в Supabase:', error);
+        
+        // Более подробное сообщение об ошибке
+        let errorMessage = 'Не удалось сохранить данные в облаке.';
+        if (error.message) {
+            errorMessage += ' Причина: ' + error.message;
+        }
+        if (error.hint) {
+            errorMessage += ' Подсказка: ' + error.hint;
+        }
+        
+        alert(errorMessage);
         return false;
     }
 }
