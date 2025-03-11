@@ -324,12 +324,12 @@ window.addEventListener('click', (event) => {
 saveItem.addEventListener('click', async () => {
     const id = document.getElementById('itemId').value;
     const title = document.getElementById('itemTitle').value;
-    const imageUrl = document.getElementById('itemImage').value;
+    const imageurl = document.getElementById('itemImage').value;
     const content = document.getElementById('itemContent').value;
 
-    if (title && imageUrl) {
+    if (title && imageurl) {
         const newId = id ? parseInt(id) : Date.now();
-        const itemData = { id: newId, title, imageUrl, content };
+        const itemData = { id: newId, title, imageurl, content };
         
         // Обновляем локальный массив
         if (id) {
@@ -408,7 +408,7 @@ function renderGallery() {
                 <button class="edit-btn" title="Редактировать">✎</button>
                 <button class="delete-btn" title="Удалить">×</button>
             </div>
-            <img src="${item.imageUrl}" alt="${item.title}">
+            <img src="${item.imageurl}" alt="${item.title}">
             <div class="title">${item.title}</div>
         `;
 
@@ -453,7 +453,7 @@ function editItem(id) {
         // Заполняем форму данными элемента
         document.getElementById('itemId').value = item.id;
         document.getElementById('itemTitle').value = item.title;
-        document.getElementById('itemImage').value = item.imageUrl;
+        document.getElementById('itemImage').value = item.imageurl;
         document.getElementById('itemContent').value = item.content || '';
 
         // Меняем заголовок модального окна
