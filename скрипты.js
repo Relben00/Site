@@ -138,19 +138,13 @@ async function loadDataFromSupabase() {
 async function saveItemToSupabase(item) {
     console.log("Saving item to Supabase:", item.id);
     try {
-        // Преобразуем объект для соответствия структуре БД
-        const formattedItem = {
-            id: item.id,
-            title: item.title,
-            "imageUrl": item.imageUrl,  // Обратите внимание на кавычки
-            content: item.content
-        };
-        
-        const { error } = await supabaseClient
-            .from('gallery_items')
-            .upsert([formattedItem], { 
-                onConflict: 'id'
-            });
+        // Используем хранимую процедуру для обхода проблемы с регистром
+        const { error } = await supabaseClient.rpc('upsert_gallery_item', {
+            p_id: item.id,
+            p_title: item.title,
+            p_image_url: item.imageUrl,
+            p_content: item.content
+        });
         
         if (error) {
             console.error("Supabase save error:", error);
@@ -158,7 +152,6 @@ async function saveItemToSupabase(item) {
         }
         
         console.log('Данные успешно сохранены в Supabase');
-        // Резервное сохранение
         localStorage.setItem('galleryItems', JSON.stringify(items));
         return true;
     } catch (error) {
