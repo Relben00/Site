@@ -36,33 +36,16 @@ authButton.addEventListener('click', () => {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("DOM loaded, checking auth status...");
     try {
-        // Проверяем статус аутентификации
-        const { data: { user }, error } = await supabaseClient.auth.getUser();
+        // Проверяем, авторизован ли пользователь
+const { data: { user } } = await supabaseClient.auth.getUser();
         
-        if (error) {
-            console.error("Auth error:", error);
-            loadFromLocalStorage();
-            return;
-        }
-        
-        if (user) {
-            // Пользователь авторизован, загружаем данные из Supabase
-            console.log("User authenticated:", user.email);
-            authButton.textContent = 'Выйти';
-            authButton.removeEventListener('click', loginWithGitHub);
-            authButton.addEventListener('click', logout);
-            
-            await loadDataFromSupabase();
-        } else {
-            // Пользователь не авторизован, используем localStorage
-            console.log("User not authenticated, using localStorage");
-            loadFromLocalStorage();
-        }
-    } catch (error) {
-        console.error("Error during initialization:", error);
-        loadFromLocalStorage();
-    }
-});
+if (user) {
+    // Сохраняем в Supabase
+    await saveItemToSupabase(itemData);
+} else {
+    // Сохраняем только в localStorage
+    localStorage.setItem('galleryItems', JSON.stringify(items));
+}
 
 // Функция для входа через GitHub
 async function loginWithGitHub() {
