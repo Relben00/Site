@@ -25,7 +25,7 @@
                 </div>
             </div>
             <button class="add-btn" id="addButton">Добавить элемент</button>
-            <button class="btn" id="authButton">Войти через GitHub</button>
+            <button class="btn" id="authButton">Войти</button>
         </div>
     </div>
 
@@ -33,6 +33,50 @@
         <!-- Элементы галереи будут добавляться сюда -->
     </div>
 
+    <!-- Добавьте модальное окно для авторизации -->
+<div id="authModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="closeAuthModal">&times;</span>
+        <h2 id="authModalTitle">Вход в систему</h2>
+        
+        <div id="loginForm">
+            <div class="form-group">
+                <label for="userEmail">Email:</label>
+                <input type="email" id="userEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="userPassword">Пароль:</label>
+                <input type="password" id="userPassword" required>
+            </div>
+            <div class="auth-buttons">
+                <button class="add-btn" id="loginButton">Войти</button>
+                <button class="btn" id="switchToRegister">Регистрация</button>
+            </div>
+            <div id="loginError" class="error-message"></div>
+        </div>
+        
+        <div id="registerForm" style="display: none;">
+            <div class="form-group">
+                <label for="newUserEmail">Email:</label>
+                <input type="email" id="newUserEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="newUserPassword">Пароль:</label>
+                <input type="password" id="newUserPassword" required>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Подтвердите пароль:</label>
+                <input type="password" id="confirmPassword" required>
+            </div>
+            <div class="auth-buttons">
+                <button class="add-btn" id="registerButton">Зарегистрироваться</button>
+                <button class="btn" id="switchToLogin">Войти</button>
+            </div>
+            <div id="registerError" class="error-message"></div>
+        </div>
+    </div>
+</div>
+    
     <!-- Модальное окно для добавления/редактирования элемента -->
     <div id="itemModal" class="modal">
         <div class="modal-content">
