@@ -85,13 +85,31 @@ async function loginWithGitHub() {
 async function logout() {
     console.log("Logging out...");
     try {
-        await supabaseClient.auth.signOut();
+        // Очищаем все токены и сессии
+        await supabaseClient.auth.signOut({
+            scope: 'global' // Выход из всех сессий, а не только текущей
+        });
+        
+        // Обновляем состояние UI
         authButton.textContent = 'Войти через GitHub';
         authButton.removeEventListener('click', logout);
         authButton.addEventListener('click', loginWithGitHub);
         
+        // Очищаем кэш сессии
+        localStorage.removeItem('supabase.auth.token');
+        
         // Загружаем данные из localStorage
         loadFromLocalStorage();
+        
+        // Отладочное сообщение
+        console.log("Logout complete");
+        
+        // Явно проверяем статус авторизации после выхода
+        setTimeout(async () => {
+            const { data } = await supabaseClient.auth.getUser();
+            console.log("Auth status after logout:", data.user);
+        }, 1000);
+        
     } catch (error) {
         console.error("Error during logout:", error);
     }
