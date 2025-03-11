@@ -5,13 +5,8 @@ let filteredItems = [];
 let currentFilter = 'all';
 let isSorted = false;
 
-// Инициализация Supabase (добавьте в head вашего HTML:
-// <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>)
-
-// Конфигурация Supabase - замените на свои данные
-const supabaseUrl = 'https://YOUR_SUPABASE_URL.supabase.co';
-const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+// Переменная Supabase уже определена в HTML, переименуем ее
+const supabaseClient = supabase;
 
 // Получаем элементы DOM
 const addButton = document.getElementById('addButton');
@@ -28,18 +23,19 @@ const cancelDelete = document.getElementById('cancelDelete');
 const confirmDelete = document.getElementById('confirmDelete');
 const gallery = document.getElementById('gallery');
 const modalTitle = document.getElementById('modalTitle');
-
-// Добавляем кнопку входа в систему
-const authButton = document.createElement('button');
-authButton.textContent = 'Войти через GitHub';
-authButton.className = 'btn';
-authButton.style.marginLeft = '10px';
-document.querySelector('.toolbar').appendChild(authButton);
+const authButton = document.getElementById('authButton');
 
 // Обработчик кнопки аутентификации
 authButton.addEventListener('click', () => {
     loginWithGitHub();
 });
+
+// Добавляем кнопку входа в систему
+//const authButton = document.createElement('button');
+//authButton.textContent = 'Войти через GitHub';
+//authButton.className = 'btn';
+//authButton.style.marginLeft = '10px';
+//document.querySelector('.toolbar').appendChild(authButton);
 
 // Загрузка данных при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
