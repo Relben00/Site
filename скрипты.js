@@ -138,9 +138,19 @@ async function loadDataFromSupabase() {
 async function saveItemToSupabase(item) {
     console.log("Saving item to Supabase:", item.id);
     try {
+        // Преобразуем объект для соответствия структуре БД
+        const formattedItem = {
+            id: item.id,
+            title: item.title,
+            "imageUrl": item.imageUrl,  // Обратите внимание на кавычки
+            content: item.content
+        };
+        
         const { error } = await supabaseClient
             .from('gallery_items')
-            .upsert([item], { onConflict: 'id' });
+            .upsert([formattedItem], { 
+                onConflict: 'id'
+            });
         
         if (error) {
             console.error("Supabase save error:", error);
@@ -324,12 +334,12 @@ window.addEventListener('click', (event) => {
 saveItem.addEventListener('click', async () => {
     const id = document.getElementById('itemId').value;
     const title = document.getElementById('itemTitle').value;
-    const imageurl = document.getElementById('itemImage').value;
+    const imageUrl = document.getElementById('itemImage').value;
     const content = document.getElementById('itemContent').value;
 
-    if (title && imageurl) {
+    if (title && imageUrl) {
         const newId = id ? parseInt(id) : Date.now();
-        const itemData = { id: newId, title, imageurl, content };
+        const itemData = { id: newId, title, imageUrl, content };
         
         // Обновляем локальный массив
         if (id) {
@@ -408,7 +418,7 @@ function renderGallery() {
                 <button class="edit-btn" title="Редактировать">✎</button>
                 <button class="delete-btn" title="Удалить">×</button>
             </div>
-            <img src="${item.imageurl}" alt="${item.title}">
+            <img src="${item.imageUrl}" alt="${item.title}">
             <div class="title">${item.title}</div>
         `;
 
@@ -453,7 +463,7 @@ function editItem(id) {
         // Заполняем форму данными элемента
         document.getElementById('itemId').value = item.id;
         document.getElementById('itemTitle').value = item.title;
-        document.getElementById('itemImage').value = item.imageurl;
+        document.getElementById('itemImage').value = item.imageUrl;
         document.getElementById('itemContent').value = item.content || '';
 
         // Меняем заголовок модального окна
