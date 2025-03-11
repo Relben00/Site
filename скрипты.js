@@ -34,6 +34,83 @@ authButton.addEventListener('click', () => {
     registerForm.style.display = 'none';
 });
 
+// Обработчик кнопки добавления
+addButton.addEventListener('click', () => {
+    // Сбрасываем поля формы
+    document.getElementById('itemId').value = '';
+    document.getElementById('itemTitle').value = '';
+    document.getElementById('itemImage').value = '';
+    document.getElementById('itemContent').value = '';
+
+    // Меняем заголовок модального окна
+    modalTitle.textContent = 'Добавить новый элемент';
+
+    // Отображаем модальное окно
+    itemModal.style.display = 'block';
+});
+
+// Обработчик кнопки сортировки
+sortButton.addEventListener('click', () => {
+    isSorted = !isSorted;
+
+    if (isSorted) {
+        sortButton.textContent = 'Отменить сортировку';
+        sortButton.style.backgroundColor = '#ff9800';
+    } else {
+        sortButton.textContent = 'Сортировка';
+        sortButton.style.backgroundColor = '#2196F3';
+    }
+
+    renderGallery();
+});
+
+// Показать/скрыть опции фильтра
+filterButton.addEventListener('click', () => {
+    filterOptions.style.display = filterOptions.style.display === 'block' ? 'none' : 'block';
+});
+
+// Обработчик сохранения элемента
+saveItem.addEventListener('click', async () => {
+    const id = document.getElementById('itemId').value;
+    const title = document.getElementById('itemTitle').value;
+    const imageUrl = document.getElementById('itemImage').value;
+    const content = document.getElementById('itemContent').value;
+
+    if (title && imageUrl) {
+        const newId = id ? parseInt(id) : Date.now();
+        const itemData = { id: newId, title, imageUrl, content };
+        
+        // Обновляем локальный массив
+        if (id) {
+            const index = items.findIndex(item => item.id === parseInt(id));
+            if (index !== -1) {
+                items[index] = itemData;
+            }
+        } else {
+            items.push(itemData);
+        }
+
+        // Проверяем, авторизован ли пользователь
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        
+        if (user) {
+            // Сохраняем в Supabase
+            await saveItemToSupabase(itemData);
+        } else {
+            // Сохраняем только в localStorage
+            localStorage.setItem('galleryItems', JSON.stringify(items));
+        }
+
+        // Обновляем галерею
+        renderGallery();
+
+        // Закрываем модальное окно
+        itemModal.style.display = 'none';
+    } else {
+        alert('Пожалуйста, заполните все обязательные поля');
+    }
+});
+
 // Закрыть модальное окно
 closeAuthModal.addEventListener('click', () => {
     authModal.style.display = 'none';
