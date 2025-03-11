@@ -35,6 +35,10 @@ authButton.addEventListener('click', () => {
 // Загрузка данных при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("DOM loaded, checking auth status...");
+    if (window.location.hash && window.location.hash.includes('access_token')) {
+        // Очищаем URL без перезагрузки страницы
+        history.replaceState(null, document.title, window.location.pathname);
+    }
     try {
         // Проверяем, авторизован ли пользователь
         const { data: { user } } = await supabaseClient.auth.getUser();
