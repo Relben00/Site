@@ -217,6 +217,43 @@ registerButton.addEventListener('click', async () => {
     }
 });
 
+// Функция для сохранения элемента в Supabase
+async function saveItemToSupabase(item) {
+    console.log("Saving item to Supabase:", item.id);
+    try {
+        // Преобразуем объект для соответствия структуре БД
+        const { error } = await supabaseClient
+            .from('gallery_items')
+            .upsert([item], { 
+                onConflict: 'id'
+            });
+        
+        if (error) {
+            console.error("Supabase save error:", error);
+            throw error;
+        }
+        
+        console.log('Данные успешно сохранены в Supabase');
+        // Резервное сохранение
+        localStorage.setItem('galleryItems', JSON.stringify(items));
+        return true;
+    } catch (error) {
+        console.error('Ошибка при сохранении в Supabase:', error);
+        alert('Не удалось сохранить данные в облаке. Данные сохранены локально.');
+        localStorage.setItem('galleryItems', JSON.stringify(items));
+        return false;
+    }
+}
+
+// Функция для открытия страницы элемента
+function openItemPage(id) {
+    id = parseInt(id);
+    const item = items.find(item => item.id === id);
+    if (item) {
+        window.open('Инфо.html?id=' + encodeURIComponent(item.id), '_blank');
+    }
+}
+
 // Функция для проверки авторизации при загрузке
 async function checkAuth() {
     try {
