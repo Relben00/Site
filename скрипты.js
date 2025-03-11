@@ -447,6 +447,7 @@ function renderGallery() {
 
 // Функция для открытия формы редактирования
 function editItem(id) {
+    id = parseInt(id);
     const item = items.find(item => item.id === id);
     if (item) {
         // Заполняем форму данными элемента
@@ -465,7 +466,7 @@ function editItem(id) {
 
 // Функция для отображения подтверждения удаления
 function showDeleteConfirmation(id) {
-    document.getElementById('deleteItemId').value = id;
+    document.getElementById('deleteItemId').value = parseInt(id);
     deleteModal.style.display = 'block';
 }
 
