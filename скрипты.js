@@ -320,7 +320,7 @@ saveItem.addEventListener('click', async () => {
         
         // Обновляем локальный массив
         if (id) {
-            const index = items.findIndex(item => item.id === id);
+            const index = items.findIndex(item => item.id === parseInt(id));
             if (index !== -1) {
                 items[index] = itemData;
             }
