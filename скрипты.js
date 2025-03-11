@@ -26,6 +26,7 @@ const cancelDelete = document.getElementById('cancelDelete');
 const confirmDelete = document.getElementById('confirmDelete');
 const gallery = document.getElementById('gallery');
 const modalTitle = document.getElementById('modalTitle');
+const authButton = document.getElementById('authButton');
 
 // Обработчик кнопки аутентификации
 authButton.addEventListener('click', () => {
@@ -47,6 +48,20 @@ addButton.addEventListener('click', () => {
 
     // Отображаем модальное окно
     itemModal.style.display = 'block';
+});
+
+// Обработчики для опций фильтра
+document.querySelectorAll('.filter-option').forEach(option => {
+    option.addEventListener('click', () => {
+        currentFilter = option.dataset.filter;
+        document.querySelectorAll('.filter-option').forEach(opt => {
+            opt.classList.remove('active-filter');
+        });
+        option.classList.add('active-filter');
+        filterButton.textContent = 'Фильтр: ' + option.textContent;
+        filterOptions.style.display = 'none';
+        renderGallery();
+    });
 });
 
 // Обработчик кнопки сортировки
@@ -202,25 +217,6 @@ registerButton.addEventListener('click', async () => {
     }
 });
 
-// Функция для выхода из системы
-async function logout() {
-    try {
-        await supabaseClient.auth.signOut();
-        
-        // Обновляем UI
-        authButton.textContent = 'Войти';
-        authButton.removeEventListener('click', logout);
-        authButton.addEventListener('click', showAuthModal); // Используем функцию showAuthModal напрямую
-        
-        // Добавить перезагрузку для полной очистки сессии
-        setTimeout(() => {
-            window.location.reload();
-        }, 500);
-    } catch (error) {
-        console.error('Ошибка при выходе:', error);
-    }
-}
-
 // Функция для проверки авторизации при загрузке
 async function checkAuth() {
     try {
@@ -284,13 +280,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadFromLocalStorage();
     }
 });
-
-// Функция для показа модального окна авторизации
-function showAuthModal() {
-    authModal.style.display = 'block';
-    loginForm.style.display = 'block';
-    registerForm.style.display = 'none';
-}
 
 // Функция для выхода из системы
 async function logout() {
