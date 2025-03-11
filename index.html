@@ -11,7 +11,7 @@
 <body>
     <div class="header">
         <h1>Моя галерея</h1>
-        <div class="controls toolbar">
+        <div class="controls">
             <input type="text" class="search-box" id="searchBox" placeholder="Поиск...">
             <button class="sort-btn" id="sortButton">Сортировка</button>
             <div style="position: relative;">
@@ -25,7 +25,7 @@
                 </div>
             </div>
             <button class="add-btn" id="addButton">Добавить элемент</button>
-            <!-- Кнопка входа через GitHub будет добавлена через JavaScript -->
+            <button class="btn" id="authButton">Войти через GitHub</button>
         </div>
     </div>
 
@@ -69,18 +69,13 @@
         </div>
     </div>
 
-    <!-- Статус облачного хранения -->
-    <div id="storageStatus" class="storage-status"></div>
-
-    <!-- Скрипт инициализации Supabase -->
+    <!-- Скрипт инициализации Supabase и основной скрипт -->
     <script>
         // Конфигурация Supabase - замените на свои данные
         const supabaseUrl = 'https://YOUR_SUPABASE_URL.supabase.co';
         const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script>
-    
-    <!-- Основной скрипт приложения -->
     <script src="скрипты.js"></script>
 </body>
 </html>
