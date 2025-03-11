@@ -31,11 +31,11 @@ authButton.addEventListener('click', () => {
 });
 
 // Добавляем кнопку входа в систему
-//const authButton = document.createElement('button');
-//authButton.textContent = 'Войти через GitHub';
-//authButton.className = 'btn';
-//authButton.style.marginLeft = '10px';
-//document.querySelector('.toolbar').appendChild(authButton);
+const authButton = document.createElement('button');
+authButton.textContent = 'Войти через GitHub';
+authButton.className = 'btn';
+authButton.style.marginLeft = '10px';
+document.querySelector('.toolbar').appendChild(authButton);
 
 // Загрузка данных при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
