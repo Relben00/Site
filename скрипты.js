@@ -315,7 +315,7 @@ saveItem.addEventListener('click', async () => {
     const content = document.getElementById('itemContent').value;
 
     if (title && imageUrl) {
-        const newId = id || Date.now().toString();
+        const newId = id ? parseInt(id) : Date.now();
         const itemData = { id: newId, title, imageUrl, content };
         
         // Обновляем локальный массив
