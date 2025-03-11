@@ -1,7 +1,7 @@
 // скрипты.js
 // Конфигурация Supabase - замените на свои данные
 const SUPABASE_URL = 'https://lfrkxefyupvaascdnotz.supabase.co';
-const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxmcmt4ZWZ5dXB2YWFzY2Rub3R6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2NTUzMDcsImV4cCI6MjA1NzIzMTMwN30.Uum8Otz649sgbiLOGa9hdbsoLPya0CIuYQHk5mHJpwU';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Массив для хранения элементов
