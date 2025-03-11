@@ -1,12 +1,14 @@
 // скрипты.js
+// Конфигурация Supabase - замените на свои данные
+const SUPABASE_URL = 'https://YOUR_SUPABASE_URL.supabase.co';
+const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // Массив для хранения элементов
 let items = [];
 let filteredItems = [];
 let currentFilter = 'all';
 let isSorted = false;
-
-// Переменная Supabase уже определена в HTML, переименуем ее
-const supabaseClient = supabase;
 
 // Получаем элементы DOM
 const addButton = document.getElementById('addButton');
@@ -32,49 +34,76 @@ authButton.addEventListener('click', () => {
 
 // Загрузка данных при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
-    // Проверяем статус аутентификации
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    
-    if (user) {
-        // Пользователь авторизован, загружаем данные из Supabase
-        authButton.textContent = 'Выйти';
-        authButton.removeEventListener('click', loginWithGitHub);
-        authButton.addEventListener('click', logout);
+    console.log("DOM loaded, checking auth status...");
+    try {
+        // Проверяем статус аутентификации
+        const { data: { user }, error } = await supabaseClient.auth.getUser();
         
-        await loadDataFromSupabase();
-    } else {
-        // Пользователь не авторизован, используем localStorage
-        const storedItems = localStorage.getItem('galleryItems');
-        if (storedItems) {
-            items = JSON.parse(storedItems);
+        if (error) {
+            console.error("Auth error:", error);
+            loadFromLocalStorage();
+            return;
         }
-        renderGallery();
+        
+        if (user) {
+            // Пользователь авторизован, загружаем данные из Supabase
+            console.log("User authenticated:", user.email);
+            authButton.textContent = 'Выйти';
+            authButton.removeEventListener('click', loginWithGitHub);
+            authButton.addEventListener('click', logout);
+            
+            await loadDataFromSupabase();
+        } else {
+            // Пользователь не авторизован, используем localStorage
+            console.log("User not authenticated, using localStorage");
+            loadFromLocalStorage();
+        }
+    } catch (error) {
+        console.error("Error during initialization:", error);
+        loadFromLocalStorage();
     }
 });
 
 // Функция для входа через GitHub
 async function loginWithGitHub() {
-    const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'github',
-        options: {
-            redirectTo: window.location.origin
+    console.log("Attempting GitHub login...");
+    try {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'github',
+            options: {
+                redirectTo: window.location.origin
+            }
+        });
+        
+        if (error) {
+            console.error('Ошибка авторизации:', error);
+            alert('Не удалось авторизоваться через GitHub');
         }
-    });
-    
-    if (error) {
-        console.error('Ошибка авторизации:', error);
-        alert('Не удалось авторизоваться через GitHub');
+    } catch (error) {
+        console.error("Error during GitHub login:", error);
+        alert('Произошла ошибка при попытке авторизации');
     }
 }
 
 // Функция для выхода из системы
 async function logout() {
-    await supabaseClient.auth.signOut();
-    authButton.textContent = 'Войти через GitHub';
-    authButton.removeEventListener('click', logout);
-    authButton.addEventListener('click', loginWithGitHub);
-    
-    // Загружаем данные из localStorage
+    console.log("Logging out...");
+    try {
+        await supabaseClient.auth.signOut();
+        authButton.textContent = 'Войти через GitHub';
+        authButton.removeEventListener('click', logout);
+        authButton.addEventListener('click', loginWithGitHub);
+        
+        // Загружаем данные из localStorage
+        loadFromLocalStorage();
+    } catch (error) {
+        console.error("Error during logout:", error);
+    }
+}
+
+// Загрузка из localStorage
+function loadFromLocalStorage() {
+    console.log("Loading data from localStorage");
     const storedItems = localStorage.getItem('galleryItems');
     if (storedItems) {
         items = JSON.parse(storedItems);
@@ -86,13 +115,18 @@ async function logout() {
 
 // Функция для загрузки данных из Supabase
 async function loadDataFromSupabase() {
+    console.log("Loading data from Supabase");
     try {
         const { data, error } = await supabaseClient
             .from('gallery_items')
             .select('*');
         
-        if (error) throw error;
+        if (error) {
+            console.error("Supabase data load error:", error);
+            throw error;
+        }
         
+        console.log("Data loaded from Supabase:", data?.length || 0, "items");
         items = data || [];
         // Сохраняем копию в localStorage для резервного копирования
         localStorage.setItem('galleryItems', JSON.stringify(items));
@@ -100,30 +134,32 @@ async function loadDataFromSupabase() {
     } catch (error) {
         console.error('Ошибка при загрузке данных из Supabase:', error);
         // Если не удалось загрузить, используем localStorage
-        const storedItems = localStorage.getItem('galleryItems');
-        if (storedItems) {
-            items = JSON.parse(storedItems);
-        }
-        renderGallery();
+        loadFromLocalStorage();
     }
 }
 
 // Функция для сохранения элемента в Supabase
 async function saveItemToSupabase(item) {
+    console.log("Saving item to Supabase:", item.id);
     try {
         const { error } = await supabaseClient
             .from('gallery_items')
             .upsert([item], { onConflict: 'id' });
         
-        if (error) throw error;
+        if (error) {
+            console.error("Supabase save error:", error);
+            throw error;
+        }
         
         console.log('Данные успешно сохранены в Supabase');
         // Резервное сохранение
         localStorage.setItem('galleryItems', JSON.stringify(items));
+        return true;
     } catch (error) {
         console.error('Ошибка при сохранении в Supabase:', error);
         alert('Не удалось сохранить данные в облаке. Данные сохранены локально.');
         localStorage.setItem('galleryItems', JSON.stringify(items));
+        return false;
     }
 }
 
