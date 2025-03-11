@@ -86,14 +86,19 @@ filterButton.addEventListener('click', () => {
 
 // Обработчик сохранения элемента
 saveItem.addEventListener('click', async () => {
+    console.log("Нажата кнопка сохранения");
     const id = document.getElementById('itemId').value;
     const title = document.getElementById('itemTitle').value;
     const imageUrl = document.getElementById('itemImage').value;
     const content = document.getElementById('itemContent').value;
 
+    console.log("Данные формы:", { id, title, imageUrl, content });
+
     if (title && imageUrl) {
         const newId = id ? parseInt(id) : Date.now();
         const itemData = { id: newId, title, imageUrl, content };
+        
+        console.log("Итоговые данные:", itemData);
         
         // Обновляем локальный массив
         if (id) {
@@ -105,15 +110,20 @@ saveItem.addEventListener('click', async () => {
             items.push(itemData);
         }
 
-        // Проверяем, авторизован ли пользователь
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        
-        if (user) {
-            // Сохраняем в Supabase
-            await saveItemToSupabase(itemData);
-        } else {
-            // Сохраняем только в localStorage
-            localStorage.setItem('galleryItems', JSON.stringify(items));
+        // Сохраняем в localStorage в любом случае
+        localStorage.setItem('galleryItems', JSON.stringify(items));
+
+        try {
+            // Проверяем, авторизован ли пользователь
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            console.log("Статус пользователя:", user ? "авторизован" : "не авторизован");
+            
+            if (user) {
+                // Сохраняем в Supabase
+                await saveItemToSupabase(itemData);
+            }
+        } catch (error) {
+            console.error("Ошибка при проверке авторизации:", error);
         }
 
         // Обновляем галерею
@@ -428,7 +438,7 @@ function renderGallery() {
                 <button class="edit-btn" title="Редактировать">✎</button>
                 <button class="delete-btn" title="Удалить">×</button>
             </div>
-            <img src="${item.imageUrl}" alt="${item.title}">
+            <img src="${item.imageUrl}" alt="${item.title}" onerror="this.src='https://via.placeholder.com/150?text=Ошибка+изображения'">
             <div class="title">${item.title}</div>
         `;
 
@@ -575,8 +585,20 @@ function getCharType(str) {
 // Функция для открытия страницы элемента
 function openItemPage(id) {
     id = parseInt(id);
+    console.log("Открытие страницы для ID:", id);
+    console.log("Доступные элементы:", items);
+    
     const item = items.find(item => item.id === id);
+    console.log("Найденный элемент:", item);
+    
     if (item) {
-        window.open('Инфо.html?id=' + encodeURIComponent(item.id), '_blank');
+        // Сохраняем данные в localStorage для доступа с другой страницы
+        localStorage.setItem('currentItem', JSON.stringify(item));
+        
+        const itemPageUrl = 'Инфо.html?id=' + encodeURIComponent(item.id);
+        console.log("Переход по URL:", itemPageUrl);
+        window.open(itemPageUrl, '_blank');
+    } else {
+        alert("Элемент не найден");
     }
 }
