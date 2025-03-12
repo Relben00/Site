@@ -231,11 +231,20 @@ function initializeDOM() {
 // Функция для сохранения данных в GitHub
 async function saveToGitHub(data) {
     try {
+        console.log('Начинаем сохранение данных в GitHub...');
+        
         // Конфигурация для GitHub
-        const username = 'Relben00'; // Замените на ваше имя пользователя GitHub
-        const repo = 'Site';      // Замените на название вашего репозитория
-        const path = 'danns.json';                // Путь к файлу в репозитории
-        const token = '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';          // Замените на новый токен (не публикуйте его)
+        const username = 'Relben00'; 
+        const repo = 'Site';      
+        const path = 'danns.json';                
+        const token = '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';
+        
+        // Проверяем, что токен не пустой
+        if (!token || token === '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') {
+            throw new Error('GitHub токен не установлен или недействителен');
+        }
+        
+        console.log('Получаем текущий файл для SHA...');
         
         // Сначала получаем текущий файл, чтобы получить его SHA
         const getResponse = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`, {
@@ -245,13 +254,30 @@ async function saveToGitHub(data) {
             }
         });
         
+        console.log('Статус ответа при получении файла:', getResponse.status);
+        
         let sha = '';
         if (getResponse.status === 200) {
             const fileInfo = await getResponse.json();
             sha = fileInfo.sha;
+            console.log('SHA получен:', sha);
+        } else if (getResponse.status === 404) {
+            console.log('Файл не существует, будет создан новый');
+        } else {
+            const errorData = await getResponse.text();
+            console.error('Ошибка при получении файла:', errorData);
+            throw new Error(`Ошибка GitHub API при получении файла: ${getResponse.status}`);
         }
         
+        // Подготавливаем данные для сохранения
+        const content = JSON.stringify(data, null, 2);
+        const encodedContent = btoa(unescape(encodeURIComponent(content)));
+        
+        console.log('Контент подготовлен для сохранения');
+        
         // Обновляем или создаем файл
+        console.log('Отправляем запрос на сохранение файла...');
+        
         const updateResponse = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`, {
             method: 'PUT',
             headers: {
@@ -261,57 +287,109 @@ async function saveToGitHub(data) {
             },
             body: JSON.stringify({
                 message: 'Обновление данных галереи',
-                content: btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2)))), // Кодирование в base64
+                content: encodedContent,
                 sha: sha || undefined
             })
         });
         
+        console.log('Статус ответа при сохранении файла:', updateResponse.status);
+        
         if (updateResponse.status === 200 || updateResponse.status === 201) {
             console.log('Данные успешно сохранены в GitHub');
+            return true;
         } else {
-            const errorData = await updateResponse.json();
-            throw new Error(`Ошибка GitHub API: ${errorData.message}`);
+            const errorData = await updateResponse.text();
+            console.error('Ошибка при сохранении файла:', errorData);
+            throw new Error(`Ошибка GitHub API при сохранении: ${updateResponse.status}`);
         }
     } catch (error) {
         console.error('Ошибка при сохранении в GitHub:', error);
-        alert('Не удалось сохранить данные в GitHub. Проверьте консоль для деталей.');
         
         // Сохраняем локально как резервную копию
         localStorage.setItem('galleryItems', JSON.stringify(data));
+        console.log('Данные сохранены локально в localStorage');
+
+        // Выводим более понятное сообщение об ошибке
+        const errorMessage = error.message.includes('GitHub токен') 
+            ? 'Не удалось сохранить данные в GitHub. Проверьте токен доступа.' 
+            : 'Не удалось сохранить данные в GitHub. Данные сохранены локально.';
+        
+        alert(errorMessage);
+        return false;
     }
 }
-
+        
 // Функция для загрузки данных из GitHub
 async function loadFromGitHub() {
     try {
+        console.log('Начинаем загрузку данных из GitHub...');
+        
         // Конфигурация для GitHub
-        const username = 'Relben00'; // Замените на ваше имя пользователя GitHub
-        const repo = 'Site';      // Замените на название вашего репозитория
-        const path = 'danns.json';                // Путь к файлу в репозитории
+        const username = 'Relben00';
+        const repo = 'Site';
+        const path = 'danns.json';
+        const token = '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';
+        
+        // Проверяем, что токен не пустой
+        if (!token || token === 'YOUR_TOKEN_HERE') {
+            throw new Error('GitHub токен не установлен или недействителен');
+        }
         
         // Получаем файл
-        const response = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`);
+        const response = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        console.log('Статус ответа при загрузке файла:', response.status);
         
         if (response.status === 200) {
             const fileInfo = await response.json();
-            // Декодируем содержимое из base64
-            const content = decodeURIComponent(escape(atob(fileInfo.content)));
-            const data = JSON.parse(content);
             
-            console.log('Данные успешно загружены из GitHub');
-            return data;
+            // Проверяем, что получен корректный ответ
+            if (!fileInfo.content) {
+                throw new Error('Получен некорректный ответ от GitHub API: отсутствует содержимое файла');
+            }
+            
+            try {
+                // Декодируем содержимое из base64
+                const content = decodeURIComponent(escape(atob(fileInfo.content)));
+                const data = JSON.parse(content);
+                
+                console.log('Данные успешно загружены из GitHub');
+                return data;
+            } catch (parseError) {
+                console.error('Ошибка при декодировании или разборе JSON:', parseError);
+                throw new Error('Не удалось декодировать или разобрать данные из GitHub');
+            }
+        } else if (response.status === 404) {
+            console.log('Файл не найден в репозитории. Будет создан при первом сохранении.');
+            return [];
         } else {
+            const errorText = await response.text();
+            console.error('Ошибка при загрузке файла:', response.status, errorText);
             throw new Error(`Ошибка GitHub API: ${response.status}`);
         }
     } catch (error) {
         console.error('Ошибка при загрузке из GitHub:', error);
         
         // Загружаем из localStorage как резервную копию
+        console.log('Пытаемся загрузить данные из localStorage...');
         const storedItems = localStorage.getItem('galleryItems');
         if (storedItems) {
-            return JSON.parse(storedItems);
+            try {
+                const data = JSON.parse(storedItems);
+                console.log('Данные успешно загружены из localStorage');
+                return data;
+            } catch (parseError) {
+                console.error('Ошибка при разборе JSON из localStorage:', parseError);
+                return [];
+            }
         }
         
+        console.log('Данные не найдены ни в GitHub, ни в localStorage');
         return [];
     }
 }
@@ -319,40 +397,129 @@ async function loadFromGitHub() {
 // Функция для сохранения данных в JSON
 async function saveDataToJSON(data) {
     try {
+        console.log('Начинаем сохранение данных...');
+        
+        // Проверяем валидность данных
+        if (!Array.isArray(data)) {
+            throw new Error('Данные должны быть массивом');
+        }
+        
         // Сохраняем в localStorage для резервной копии
         localStorage.setItem('galleryItems', JSON.stringify(data));
+        console.log('Данные сохранены в localStorage');
       
         // Сохраняем в GitHub
-        await saveToGitHub(data);
+        const githubResult = await saveToGitHub(data);
         
-        console.log('Данные сохранены:', JSON.stringify(data, null, 2));
-        return JSON.stringify(data, null, 2);
+        if (githubResult) {
+            console.log('Данные успешно сохранены в GitHub и локально');
+            return true;
+        } else {
+            console.log('Данные сохранены только локально');
+            return false;
+        }
     } catch (error) {
         console.error('Ошибка при сохранении данных:', error);
-        return JSON.stringify(data, null, 2);
+        alert('Произошла ошибка при сохранении данных: ' + error.message);
+        
+        // В любом случае пытаемся сохранить в localStorage
+        try {
+            localStorage.setItem('galleryItems', JSON.stringify(data));
+            console.log('Данные сохранены в localStorage после ошибки');
+        } catch (localError) {
+            console.error('Не удалось сохранить даже в localStorage:', localError);
+        }
+        
+        return false;
     }
 }
+
+// Функция для тестирования соединения с GitHub
+async function testGitHubConnection() {
+    try {
+        const username = 'Relben00';
+        const token = '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';
+        
+        console.log('Тестирование соединения с GitHub...');
+        
+        const response = await fetch(`https://api.github.com/users/${username}`, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        if (response.status === 200) {
+            const userData = await response.json();
+            console.log('Соединение с GitHub успешно установлено. Пользователь:', userData.login);
+            return true;
+        } else {
+            const errorText = await response.text();
+            console.error('Ошибка при тестировании соединения:', response.status, errorText);
+            return false;
+        }
+    } catch (error) {
+        console.error('Ошибка при тестировании соединения с GitHub:', error);
+        return false;
+    }
+}
+
+// Добавляем тестирование соединения при загрузке страницы
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOM полностью загружен');
+    
+    // Тестируем соединение с GitHub
+    const githubConnected = await testGitHubConnection();
+    if (githubConnected) {
+        console.log('GitHub API доступен');
+    } else {
+        console.warn('GitHub API недоступен, будет использоваться только локальное хранилище');
+        alert('Не удалось подключиться к GitHub. Данные будут сохраняться только локально.');
+    }
 
 // Функция для загрузки данных из JSON
 async function loadDataFromJSON() {
     try {
+        console.log('Начинаем загрузку данных...');
+        
         // Загружаем из GitHub
         const data = await loadFromGitHub();
         
+        // Проверяем полученные данные
+        if (!Array.isArray(data)) {
+            console.error('Загруженные данные не являются массивом:', data);
+            throw new Error('Загруженные данные имеют неправильный формат');
+        }
+        
         // Используем загруженные данные
-        items = data || [];
-        console.log('Данные загружены:', items);
+        items = data;
+        console.log(`Данные загружены: ${items.length} элементов`);
         
         // Отображаем данные
         displayData(items);
+        return true;
     } catch (error) {
         console.error('Ошибка при загрузке данных:', error);
         
         // Если не удалось загрузить, используем localStorage
-        const storedItems = localStorage.getItem('galleryItems');
-        if (storedItems) {
-            items = JSON.parse(storedItems);
+        try {
+            const storedItems = localStorage.getItem('galleryItems');
+            if (storedItems) {
+                items = JSON.parse(storedItems);
+                console.log(`Данные загружены из localStorage: ${items.length} элементов`);
+                displayData(items);
+                return true;
+            } else {
+                console.log('Данные в localStorage не найдены');
+                items = [];
+                displayData(items);
+                return false;
+            }
+        } catch (localError) {
+            console.error('Ошибка при загрузке из localStorage:', localError);
+            items = [];
             displayData(items);
+            return false;
         }
     }
 }
@@ -369,44 +536,200 @@ function displayData(data) {
 // Функция для сохранения элемента в JSON
 async function saveItemToJSON(item) {
     try {
+        console.log('Сохранение элемента:', item);
+        
+        // Проверяем валидность элемента
+        if (!item || !item.id || !item.title || !item.imageUrl) {
+            throw new Error('Элемент содержит не все обязательные поля');
+        }
+        
         // Обновляем локальный массив items
         const index = items.findIndex(i => i.id === item.id);
         if (index !== -1) {
             items[index] = item;
+            console.log('Элемент обновлен в массиве');
         } else {
             items.push(item);
+            console.log('Элемент добавлен в массив');
         }
         
-        // Сохраняем в localStorage
+        // Сохраняем в localStorage в любом случае
         localStorage.setItem('galleryItems', JSON.stringify(items));
+        console.log('Массив сохранен в localStorage');
         
         // Сохраняем в JSON файл через GitHub API
-        await saveDataToJSON(items);
+        const savedToGitHub = await saveDataToJSON(items);
         
-        console.log('Данные успешно сохранены');
+        if (savedToGitHub) {
+            console.log('Данные успешно сохранены в GitHub');
+        } else {
+            console.log('Данные сохранены только локально');
+        }
+        
+        return true;
     } catch (error) {
         console.error('Ошибка при сохранении данных:', error);
-        alert('Не удалось сохранить данные в файл. Данные сохранены локально.');
-        localStorage.setItem('galleryItems', JSON.stringify(items));
+        alert('Не удалось сохранить элемент. Ошибка: ' + error.message);
+        
+        // В любом случае пытаемся сохранить в localStorage
+        try {
+            localStorage.setItem('galleryItems', JSON.stringify(items));
+            console.log('Данные сохранены локально после ошибки');
+        } catch (localError) {
+            console.error('Не удалось сохранить даже в localStorage:', localError);
+        }
+        
+        return false;
     }
 }
 
 // Функция для удаления элемента из JSON
 async function deleteItemFromJSON(id) {
     try {
+        console.log('Удаление элемента с ID:', id);
+        
+        if (!id) {
+            throw new Error('ID элемента не указан');
+        }
+        
+        // Проверяем, существует ли элемент
+        const itemExists = items.some(item => item.id === id);
+        if (!itemExists) {
+            console.warn('Элемент с ID', id, 'не найден в массиве');
+        }
+        
         // Удаляем элемент из массива
+        const originalLength = items.length;
         items = items.filter(item => item.id !== id);
+        
+        console.log(`Удалено элементов: ${originalLength - items.length}`);
         
         // Сохраняем обновленный массив в localStorage
         localStorage.setItem('galleryItems', JSON.stringify(items));
+        console.log('Обновленный массив сохранен в localStorage');
         
         // Сохраняем в JSON файл через GitHub API
-        await saveDataToJSON(items);
+        const savedToGitHub = await saveDataToJSON(items);
         
-        console.log('Элемент успешно удален');
+        if (savedToGitHub) {
+            console.log('Данные успешно сохранены в GitHub после удаления');
+        } else {
+            console.log('Данные сохранены только локально после удаления');
+        }
+        
+        return true;
     } catch (error) {
         console.error('Ошибка при удалении данных:', error);
-        alert('Не удалось удалить данные из файла. Данные удалены только локально.');
+        alert('Не удалось удалить элемент. Ошибка: ' + error.message);
+        
+        // В любом случае пытаемся сохранить в localStorage
+        try {
+            localStorage.setItem('galleryItems', JSON.stringify(items));
+            console.log('Данные сохранены в localStorage после ошибки удаления');
+        } catch (localError) {
+            console.error('Не удалось сохранить даже в localStorage после удаления:', localError);
+        }
+        
+        return false;
+    }
+}
+
+    // Функция для проверки токена GitHub
+async function checkGitHubToken() {
+    const token = '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';
+    
+    if (!token || token === 'YOUR_TOKEN_HERE') {
+        console.error('GitHub токен не установлен');
+        return false;
+    }
+    
+    try {
+        const response = await fetch('https://api.github.com/user', {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        if (response.status === 200) {
+            const userData = await response.json();
+            console.log('GitHub токен действителен. Пользователь:', userData.login);
+            return true;
+        } else {
+            console.error('GitHub токен недействителен. Статус:', response.status);
+            return false;
+        }
+    } catch (error) {
+        console.error('Ошибка при проверке GitHub токена:', error);
+        return false;
+    }
+}
+
+    // Функция для обновления статуса GitHub в интерфейсе
+function updateGitHubStatus(isConnected) {
+    // Создаем или находим элемент статуса
+    let statusElement = document.getElementById('githubStatus');
+    
+    if (!statusElement) {
+        statusElement = document.createElement('div');
+        statusElement.id = 'githubStatus';
+        statusElement.style.position = 'fixed';
+        statusElement.style.bottom = '10px';
+        statusElement.style.right = '10px';
+        statusElement.style.padding = '5px 10px';
+        statusElement.style.borderRadius = '5px';
+        statusElement.style.fontSize = '12px';
+        document.body.appendChild(statusElement);
+    }
+    
+    if (isConnected) {
+        statusElement.textContent = 'GitHub: Подключен';
+        statusElement.style.backgroundColor = '#4CAF50';
+        statusElement.style.color = 'white';
+    } else {
+        statusElement.textContent = 'GitHub: Отключен';
+        statusElement.style.backgroundColor = '#f44336';
+        statusElement.style.color = 'white';
+    }
+}
+
+    // Функция для создания резервной копии данных
+function createBackup() {
+    try {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const backupData = JSON.stringify(items);
+        localStorage.setItem(`galleryBackup_${timestamp}`, backupData);
+        
+        // Сохраняем список резервных копий
+        const backupsList = JSON.parse(localStorage.getItem('galleryBackupsList') || '[]');
+        backupsList.push(timestamp);
+        localStorage.setItem('galleryBackupsList', JSON.stringify(backupsList));
+        
+        console.log(`Создана резервная копия данных: galleryBackup_${timestamp}`);
+        return true;
+    } catch (error) {
+        console.error('Ошибка при создании резервной копии:', error);
+        return false;
+    }
+}
+
+    // Функция для восстановления из резервной копии
+function restoreFromBackup(timestamp) {
+    try {
+        const backupData = localStorage.getItem(`galleryBackup_${timestamp}`);
+        if (!backupData) {
+            throw new Error(`Резервная копия galleryBackup_${timestamp} не найдена`);
+        }
+        
+        const restoredItems = JSON.parse(backupData);
+        items = restoredItems;
+        localStorage.setItem('galleryItems', backupData);
+        
+        console.log(`Данные восстановлены из резервной копии: galleryBackup_${timestamp}`);
+        return true;
+    } catch (error) {
+        console.error('Ошибка при восстановлении из резервной копии:', error);
+        return false;
     }
 }
 
@@ -617,16 +940,28 @@ function setupAutoLoad() {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('DOM полностью загружен');
     
+    // Проверяем токен GitHub
+    const githubConnected = await checkGitHubToken();
+    updateGitHubStatus(githubConnected);
+    
+    // Создаем резервную копию при запуске
+    createBackup();
+    
     // Инициализируем элементы DOM и прикрепляем обработчики
     const domElements = initializeDOM();
     
     // Проверяем, что все элементы найдены
     if (!domElements.gallery) {
         console.error('Критическая ошибка: элемент gallery не найден!');
+        alert('Ошибка: Не удалось найти элемент галереи на странице!');
     }
     
     // Загружаем данные из JSON или localStorage
-    await loadDataFromJSON();
+    const dataLoaded = await loadDataFromJSON();
+    
+    if (!dataLoaded) {
+        console.warn('Не удалось загрузить данные. Используется пустой массив.');
+    }
     
     // Отображаем галерею
     renderGallery();
