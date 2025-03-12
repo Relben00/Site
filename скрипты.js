@@ -35,7 +35,7 @@ function saveDataToJSON(data) {
   // Используем localStorage для временного хранения
   localStorage.setItem('galleryItems', jsonData);
   
-  // Здесь можно добавить код для сохранения в файл на GitHub
+ // Здесь можно добавить код для сохранения в файл на GitHub
   // Например, через GitHub API (потребуется дополнительная настройка)
   console.log('Данные сохранены:', jsonData);
   return jsonData;
@@ -57,7 +57,7 @@ async function loadDataFromJSON() {
   } catch (error) {
     console.error('Ошибка при загрузке данных из JSON:', error);
     
-    // Если не удалось загрузить из JSON, используем localStorage
+     // Если не удалось загрузить из JSON, используем localStorage
     const storedItems = localStorage.getItem('galleryItems');
     if (storedItems) {
       items = JSON.parse(storedItems);
@@ -78,40 +78,6 @@ function displayData(data) {
   renderGallery();
 }
 
-// Функция для отображения галереи
-function renderGallery() {
-  // Ваш код для отображения элементов в галерее
-  // Например:
-  gallery.innerHTML = '';
-  
-  const itemsToRender = filteredItems.length > 0 ? filteredItems : items;
-  
-  itemsToRender.forEach((item, index) => {
-    const itemElement = document.createElement('div');
-    itemElement.className = 'gallery-item';
-    itemElement.innerHTML = `
-      <h3>${item.title || 'Без названия'}</h3>
-      <p>${item.description || 'Нет описания'}</p>
-    `;
-    
-    // Добавляем обработчики событий для редактирования/удаления
-    itemElement.addEventListener('click', () => {
-      // Код для редактирования элемента
-    });
-    
-    gallery.appendChild(itemElement);
-  });
-}
-
-// Функция для сохранения изменений
-function saveChanges() {
-  // Сохраняем данные в JSON
-  saveDataToJSON(items);
-  
-  // Обновляем отображение
-  renderGallery();
-}
-
 // Функция для сохранения элемента в JSON
 async function saveItemToJSON(item) {
     try {
@@ -123,13 +89,12 @@ async function saveItemToJSON(item) {
             items.push(item);
         }
         
-        // Сохраняем в localStorage
+ // Сохраняем в localStorage
         localStorage.setItem('galleryItems', JSON.stringify(items));
         
         // Сохраняем в JSON файл (через GitHub API или другой метод)
         // Здесь нужно будет добавить код для сохранения на GitHub
         saveDataToJSON(items);
-        
         console.log('Данные успешно сохранены');
     } catch (error) {
         console.error('Ошибка при сохранении данных:', error);
@@ -137,8 +102,8 @@ async function saveItemToJSON(item) {
         localStorage.setItem('galleryItems', JSON.stringify(items));
     }
 }
-
-// Функция для удаления элемента из JSON
+        
+   // Функция для удаления элемента из JSON
 async function deleteItemFromJSON(id) {
     try {
         // Удаляем элемент из массива
@@ -223,7 +188,6 @@ addButton.addEventListener('click', () => {
     // Отображаем модальное окно
     itemModal.style.display = 'block';
 });
-
 // Обработчик кнопки сортировки
 sortButton.addEventListener('click', () => {
     isSorted = !isSorted;
@@ -322,20 +286,96 @@ saveItem.addEventListener('click', async () => {
             items.push(itemData);
         }
         
-      // Обработчик клика для редактирования
-editBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    editItem(item.id);
+        // Сохраняем данные в JSON
+        await saveItemToJSON(itemData);
+        
+        // Обновляем галерею
+        renderGallery();
+        
+        // Закрываем модальное окно
+        itemModal.style.display = 'none';
+    } else {
+        alert('Пожалуйста, заполните все обязательные поля');
+    }
 });
 
-// Обработчик клика для удаления
-deleteBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    showDeleteConfirmation(item.id);
-});
-
-gallery.appendChild(itemElement);
-});
+// Функция для отображения галереи (исправленная)
+function renderGallery() {
+    gallery.innerHTML = '';
+    
+    // Применяем фильтрацию
+    let displayItems = items;
+    
+    // Фильтрация по поисковому запросу
+    const searchQuery = searchBox.value.toLowerCase().trim();
+    if (searchQuery) {
+        displayItems = displayItems.filter(item => 
+            item.title.toLowerCase().includes(searchQuery) || 
+            (item.content && item.content.toLowerCase().includes(searchQuery))
+        );
+    }
+    
+    // Фильтрация по типу
+    if (currentFilter !== 'all') {
+        displayItems = displayItems.filter(item => getCharType(item.title) === currentFilter);
+    }
+    
+    // Применяем сортировку
+    if (isSorted) {
+        displayItems = sortItems(displayItems);
+    }
+    
+    // Если нет элементов для отображения
+    if (displayItems.length === 0) {
+        gallery.innerHTML = '<div class="no-items">Нет элементов для отображения</div>';
+        return;
+    }
+    
+    // Отображаем элементы
+    displayItems.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'gallery-item';
+        itemElement.dataset.id = item.id;
+        
+        itemElement.innerHTML = `
+            <div class="item-actions">
+                <button class="edit-btn" title="Редактировать">✎</button>
+                <button class="delete-btn" title="Удалить">×</button>
+            </div>
+            <img src="${item.imageUrl}" alt="${item.title}" class="item-image">
+            <div class="item-title">${item.title}</div>
+            <div class="item-content">${item.content || ''}</div>
+        `;
+        
+        // Находим элементы внутри созданного элемента
+        const itemImage = itemElement.querySelector('.item-image');
+        const itemTitle = itemElement.querySelector('.item-title');
+        const editBtn = itemElement.querySelector('.edit-btn');
+        const deleteBtn = itemElement.querySelector('.delete-btn');
+        
+        // Обработчик клика для редактирования
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            editItem(item.id);
+        });
+        
+        // Обработчик клика для удаления
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showDeleteConfirmation(item.id);
+        });
+        
+        // Обработчик клика на изображение или заголовок для открытия страницы
+        itemImage.addEventListener('click', () => {
+            openItemPage(item.id);
+        });
+        
+        itemTitle.addEventListener('click', () => {
+            openItemPage(item.id);
+        });
+        
+        gallery.appendChild(itemElement);
+    });
 }
 
 // Функция для открытия формы редактирования
@@ -391,3 +431,120 @@ function openItemPage(id) {
         window.open(itemPageUrl, '_blank');
     }
 }
+
+// Функция для фильтрации элементов
+function filterItems() {
+    const searchQuery = searchBox.value.toLowerCase().trim();
+    
+    // Фильтруем элементы по поисковому запросу и текущему фильтру
+    filteredItems = items.filter(item => {
+        // Проверяем соответствие поисковому запросу
+        const matchesSearch = !searchQuery || 
+            item.title.toLowerCase().includes(searchQuery) || 
+            (item.content && item.content.toLowerCase().includes(searchQuery));
+            
+        // Проверяем соответствие фильтру
+        let matchesFilter = true;
+        if (currentFilter !== 'all') {
+            matchesFilter = getCharType(item.title) === currentFilter;
+        }
+        
+        return matchesSearch && matchesFilter;
+    });
+    
+    // Применяем сортировку, если нужно
+    if (isSorted) {
+        filteredItems = sortItems(filteredItems);
+    }
+    
+    // Обновляем отображение
+    renderGallery();
+}
+
+// Функция для автоматического сохранения данных
+function setupAutoSave() {
+    // Сохраняем данные каждые 5 минут
+    setInterval(() => {
+        if (items.length > 0) {
+            saveDataToJSON(items);
+            console.log('Автоматическое сохранение выполнено');
+        }
+    }, 5 * 60 * 1000); // 5 минут
+}
+
+// Функция для автоматической загрузки данных
+function setupAutoLoad() {
+    // Загружаем данные каждые 10 минут
+    setInterval(() => {
+        loadDataFromJSON();
+        console.log('Автоматическая загрузка данных выполнена');
+    }, 10 * 60 * 1000); // 10 минут
+}
+
+// Инициализация автоматического сохранения и загрузки
+setupAutoSave();
+setupAutoLoad();
+
+// Функция для сохранения данных в GitHub
+async function saveToGitHub(data) {
+    try {
+        // Здесь должен быть код для интеграции с GitHub API
+        // Это требует настройки токена доступа и прав на репозиторий
+        
+        // Пример структуры запроса (не работает без настройки):
+        /*
+        const response = await fetch('https://api.github.com/repos/USERNAME/REPO/contents/danns.json', {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'token YOUR_GITHUB_TOKEN',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: 'Обновление данных',
+                content: btoa(JSON.stringify(data, null, 2)),
+                sha: 'current_file_sha_if_exists'
+            })
+        });
+        
+        const result = await response.json();
+        console.log('Данные сохранены в GitHub:', result);
+        */
+        
+        // Пока просто сохраняем в localStorage
+        localStorage.setItem('galleryItems', JSON.stringify(data));
+        console.log('Данные сохранены локально (GitHub API не настроен)');
+    } catch (error) {
+        console.error('Ошибка при сохранении в GitHub:', error);
+    }
+}
+
+// Проверка работы кнопок при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Страница загружена, проверяем кнопки:');
+    console.log('- Кнопка добавления:', addButton);
+    console.log('- Кнопка сортировки:', sortButton);
+    console.log('- Кнопка фильтра:', filterButton);
+    
+    // Проверяем, что обработчики событий прикреплены правильно
+    if (addButton) {
+        console.log('Обработчик кнопки добавления установлен');
+    }
+    
+    if (sortButton) {
+        console.log('Обработчик кнопки сортировки установлен');
+    }
+    
+    if (filterButton) {
+        console.log('Обработчик кнопки фильтра установлен');
+    }
+    
+    // Загружаем данные
+    loadDataFromJSON();
+});
+
+// Добавляем обработчик ошибок для отладки
+window.onerror = function(message, source, lineno, colno, error) {
+    console.error('Ошибка в JavaScript:', message, 'Строка:', lineno, 'Колонка:', colno, 'Источник:', source, 'Объект ошибки:', error);
+    return true;
+};
+        
