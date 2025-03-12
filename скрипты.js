@@ -68,6 +68,9 @@ async function saveToGitHub(data) {
     } catch (error) {
         console.error('Ошибка при сохранении в GitHub:', error);
         alert('Не удалось сохранить данные в GitHub. Проверьте консоль для деталей.');
+        
+        // Сохраняем локально как резервную копию
+        localStorage.setItem('galleryItems', JSON.stringify(data));
     }
 }
 
@@ -111,6 +114,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем данные из JSON или localStorage
     await loadDataFromJSON();
     renderGallery();
+    
+    console.log('Страница загружена, проверяем кнопки:');
+    console.log('- Кнопка добавления:', addButton);
+    console.log('- Кнопка сортировки:', sortButton);
+    console.log('- Кнопка фильтра:', filterButton);
+    
+    // Проверяем, что обработчики событий прикреплены правильно
+    if (addButton) {
+        console.log('Обработчик кнопки добавления установлен');
+    }
+    
+    if (sortButton) {
+        console.log('Обработчик кнопки сортировки установлен');
+    }
+    
+    if (filterButton) {
+        console.log('Обработчик кнопки фильтра установлен');
+    }
 });
 
 // Функция для сохранения данных в JSON
@@ -351,7 +372,7 @@ window.addEventListener('click', (event) => {
     }
 });
 
-// Модифицированный обработчик сохранения
+// Обработчик сохранения
 saveItem.addEventListener('click', async () => {
     const id = document.getElementById('itemId').value;
     const title = document.getElementById('itemTitle').value;
@@ -488,7 +509,7 @@ function showDeleteConfirmation(id) {
     deleteModal.style.display = 'block';
 }
 
-// Модифицированный обработчик подтверждения удаления
+// Обработчик подтверждения удаления
 confirmDelete.addEventListener('click', async () => {
     const id = document.getElementById('deleteItemId').value;
 
@@ -518,35 +539,6 @@ function openItemPage(id) {
     }
 }
 
-// Функция для фильтрации элементов
-function filterItems() {
-    const searchQuery = searchBox.value.toLowerCase().trim();
-    
-    // Фильтруем элементы по поисковому запросу и текущему фильтру
-    filteredItems = items.filter(item => {
-        // Проверяем соответствие поисковому запросу
-        const matchesSearch = !searchQuery || 
-            item.title.toLowerCase().includes(searchQuery) || 
-            (item.content && item.content.toLowerCase().includes(searchQuery));
-            
-        // Проверяем соответствие фильтру
-        let matchesFilter = true;
-        if (currentFilter !== 'all') {
-            matchesFilter = getCharType(item.title) === currentFilter;
-        }
-        
-        return matchesSearch && matchesFilter;
-    });
-    
-    // Применяем сортировку, если нужно
-    if (isSorted) {
-        filteredItems = sortItems(filteredItems);
-    }
-    
-    // Обновляем отображение
-    renderGallery();
-}
-
 // Функция для автоматического сохранения данных
 function setupAutoSave() {
     // Сохраняем данные каждые 5 минут
@@ -570,126 +562,6 @@ function setupAutoLoad() {
 // Инициализация автоматического сохранения и загрузки
 setupAutoSave();
 setupAutoLoad();
-
-// Функция для сохранения данных в GitHub
-async function saveToGitHub(data) {
-    try {
-        // Конфигурация для GitHub
-        const username = 'Relben00'; // Замените на ваше имя пользователя GitHub
-        const repo = 'Site';      // Замените на название вашего репозитория
-        const path = 'danns.json';                // Путь к файлу в репозитории
-        const token = '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';          // Замените на новый токен (не публикуйте его)
-        
-        // Сначала получаем текущий файл, чтобы получить его SHA
-        const getResponse = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`, {
-            headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-        
-        let sha = '';
-        if (getResponse.status === 200) {
-            const fileInfo = await getResponse.json();
-            sha = fileInfo.sha;
-        }
-
-        // Обновляем или создаем файл
-        const updateResponse = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `token ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github.v3+json'
-            },
-            body: JSON.stringify({
-                message: 'Обновление данных галереи',
-                content: btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2)))), // Кодирование в base64
-                sha: sha || undefined
-            })
-        });
-        
-        if (updateResponse.status === 200 || updateResponse.status === 201) {
-            console.log('Данные успешно сохранены в GitHub');
-        } else {
-            const errorData = await updateResponse.json();
-            throw new Error(`Ошибка GitHub API: ${errorData.message}`);
-        }
-    } catch (error) {
-        console.error('Ошибка при сохранении в GitHub:', error);
-        alert('Не удалось сохранить данные в GitHub. Проверьте консоль для деталей.');
-        
-        // Сохраняем локально как резервную копию
-        localStorage.setItem('galleryItems', JSON.stringify(data));
-    }
-}
-
-// Функция для загрузки данных из GitHub
-async function loadFromGitHub() {
-    try {
-        // Конфигурация для GitHub
-        const username = 'Relben00'; // Замените на ваше имя пользователя GitHub
-        const repo = 'Site';      // Замените на название вашего репозитория
-        const path = 'danns.json';                // Путь к файлу в репозитории
-        
-        // Получаем файл
-        const response = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`);
-        
-        if (response.status === 200) {
-            const fileInfo = await response.json();
-            // Декодируем содержимое из base64
-            const content = decodeURIComponent(escape(atob(fileInfo.content)));
-            const data = JSON.parse(content);
-            
-            console.log('Данные успешно загружены из GitHub');
-            return data;
-        } else {
-            throw new Error(`Ошибка GitHub API: ${response.status}`);
-        }
-    } catch (error) {
-        console.error('Ошибка при загрузке из GitHub:', error);
-        
-        // Загружаем из localStorage как резервную копию
-        const storedItems = localStorage.getItem('galleryItems');
-        if (storedItems) {
-            return JSON.parse(storedItems);
-        }
-        
-        return [];
-    }
-}
-        
-        // Пока просто сохраняем в localStorage
-        localStorage.setItem('galleryItems', JSON.stringify(data));
-        console.log('Данные сохранены локально (GitHub API не настроен)');
-    } catch (error) {
-        console.error('Ошибка при сохранении в GitHub:', error);
-    }
-}
-
-// Проверка работы кнопок при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Страница загружена, проверяем кнопки:');
-    console.log('- Кнопка добавления:', addButton);
-    console.log('- Кнопка сортировки:', sortButton);
-    console.log('- Кнопка фильтра:', filterButton);
-    
-    // Проверяем, что обработчики событий прикреплены правильно
-    if (addButton) {
-        console.log('Обработчик кнопки добавления установлен');
-    }
-    
-    if (sortButton) {
-        console.log('Обработчик кнопки сортировки установлен');
-    }
-    
-    if (filterButton) {
-        console.log('Обработчик кнопки фильтра установлен');
-    }
-    
-    // Загружаем данные
-    loadDataFromJSON();
-});
 
 // Добавляем обработчик ошибок для отладки
 window.onerror = function(message, source, lineno, colno, error) {
