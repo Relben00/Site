@@ -5,21 +5,228 @@ let filteredItems = [];
 let currentFilter = 'all';
 let isSorted = false;
 
-// Получаем элементы DOM
-const addButton = document.getElementById('addButton');
-const sortButton = document.getElementById('sortButton');
-const filterButton = document.getElementById('filterButton');
-const filterOptions = document.getElementById('filterOptions');
-const searchBox = document.getElementById('searchBox');
-const itemModal = document.getElementById('itemModal');
-const deleteModal = document.getElementById('deleteModal');
-const closeModal = document.getElementById('closeModal');
-const closeDeleteModal = document.getElementById('closeDeleteModal');
-const saveItem = document.getElementById('saveItem');
-const cancelDelete = document.getElementById('cancelDelete');
-const confirmDelete = document.getElementById('confirmDelete');
-const gallery = document.getElementById('gallery');
-const modalTitle = document.getElementById('modalTitle');
+// Функция для получения элементов DOM после загрузки страницы
+function initializeDOM() {
+    // Получаем элементы DOM
+    const addButton = document.getElementById('addButton');
+    const sortButton = document.getElementById('sortButton');
+    const filterButton = document.getElementById('filterButton');
+    const filterOptions = document.getElementById('filterOptions');
+    const searchBox = document.getElementById('searchBox');
+    const itemModal = document.getElementById('itemModal');
+    const deleteModal = document.getElementById('deleteModal');
+    const closeModal = document.getElementById('closeModal');
+    const closeDeleteModal = document.getElementById('closeDeleteModal');
+    const saveItem = document.getElementById('saveItem');
+    const cancelDelete = document.getElementById('cancelDelete');
+    const confirmDelete = document.getElementById('confirmDelete');
+    const gallery = document.getElementById('gallery');
+    const modalTitle = document.getElementById('modalTitle');
+    
+    // Проверяем, существуют ли элементы
+    console.log('Элементы DOM:', {
+        addButton, sortButton, filterButton, filterOptions, searchBox,
+        itemModal, deleteModal, closeModal, closeDeleteModal,
+        saveItem, cancelDelete, confirmDelete, gallery, modalTitle
+    });
+    
+    // Открыть модальное окно при нажатии на кнопку добавления
+    if (addButton) {
+        addButton.addEventListener('click', () => {
+            // Сбрасываем поля формы
+            document.getElementById('itemId').value = '';
+            document.getElementById('itemTitle').value = '';
+            document.getElementById('itemImage').value = '';
+            document.getElementById('itemContent').value = '';
+
+            // Меняем заголовок модального окна
+            modalTitle.textContent = 'Добавить новый элемент';
+
+            // Отображаем модальное окно
+            itemModal.style.display = 'block';
+        });
+        console.log('Обработчик кнопки добавления установлен');
+    } else {
+        console.error('Элемент addButton не найден!');
+    }
+
+    // Обработчик кнопки сортировки
+    if (sortButton) {
+        sortButton.addEventListener('click', () => {
+            isSorted = !isSorted;
+
+            if (isSorted) {
+                sortButton.textContent = 'Отменить сортировку';
+                sortButton.style.backgroundColor = '#ff9800';
+            } else {
+                sortButton.textContent = 'Сортировка';
+                sortButton.style.backgroundColor = '#2196F3';
+            }
+
+            renderGallery();
+        });
+        console.log('Обработчик кнопки сортировки установлен');
+    } else {
+        console.error('Элемент sortButton не найден!');
+    }
+
+    // Показать/скрыть опции фильтра
+    if (filterButton && filterOptions) {
+        filterButton.addEventListener('click', () => {
+            filterOptions.style.display = filterOptions.style.display === 'block' ? 'none' : 'block';
+        });
+        console.log('Обработчик кнопки фильтра установлен');
+    } else {
+        console.error('Элемент filterButton или filterOptions не найден!');
+    }
+
+    // Закрыть опции фильтра при клике вне
+    document.addEventListener('click', (event) => {
+        if (filterOptions && !event.target.closest('.filter-btn') && !event.target.closest('.filter-options')) {
+            filterOptions.style.display = 'none';
+        }
+    });
+
+    // Обработчики для опций фильтра
+    document.querySelectorAll('.filter-option').forEach(option => {
+        option.addEventListener('click', () => {
+            currentFilter = option.dataset.filter;
+
+            // Обновляем активный класс
+            document.querySelectorAll('.filter-option').forEach(opt => {
+                opt.classList.remove('active-filter');
+            });
+            option.classList.add('active-filter');
+
+            // Обновляем текст кнопки фильтра
+            if (filterButton) {
+                filterButton.textContent = 'Фильтр: ' + option.textContent;
+            }
+
+            // Скрываем опции фильтра
+            if (filterOptions) {
+                filterOptions.style.display = 'none';
+            }
+
+            // Обновляем галерею
+            renderGallery();
+        });
+    });
+
+    // Поиск по названию
+    if (searchBox) {
+        searchBox.addEventListener('input', () => {
+            renderGallery();
+        });
+        console.log('Обработчик поиска установлен');
+    } else {
+        console.error('Элемент searchBox не найден!');
+    }
+
+    // Закрыть модальные окна
+    if (closeModal && itemModal) {
+        closeModal.addEventListener('click', () => {
+            itemModal.style.display = 'none';
+        });
+    }
+
+    if (closeDeleteModal && deleteModal) {
+        closeDeleteModal.addEventListener('click', () => {
+            deleteModal.style.display = 'none';
+        });
+    }
+
+    if (cancelDelete && deleteModal) {
+        cancelDelete.addEventListener('click', () => {
+            deleteModal.style.display = 'none';
+        });
+    }
+
+    // Закрыть модальные окна при клике вне их
+    window.addEventListener('click', (event) => {
+        if (itemModal && event.target === itemModal) {
+            itemModal.style.display = 'none';
+        }
+        if (deleteModal && event.target === deleteModal) {
+            deleteModal.style.display = 'none';
+        }
+    });
+
+    // Обработчик сохранения
+    if (saveItem) {
+        saveItem.addEventListener('click', async () => {
+            const id = document.getElementById('itemId').value;
+            const title = document.getElementById('itemTitle').value;
+            const imageUrl = document.getElementById('itemImage').value;
+            const content = document.getElementById('itemContent').value;
+
+            if (title && imageUrl) {
+                const newId = id || Date.now().toString();
+                const itemData = { id: newId, title, imageUrl, content };
+                
+                // Обновляем локальный массив
+                if (id) {
+                    const index = items.findIndex(item => item.id === id);
+                    if (index !== -1) {
+                        items[index] = itemData;
+                    }
+                } else {
+                    items.push(itemData);
+                }
+                
+                // Сохраняем данные в JSON
+                await saveItemToJSON(itemData);
+                
+                // Обновляем галерею
+                renderGallery();
+                
+                // Закрываем модальное окно
+                if (itemModal) {
+                    itemModal.style.display = 'none';
+                }
+            } else {
+                alert('Пожалуйста, заполните все обязательные поля');
+            }
+        });
+        console.log('Обработчик сохранения установлен');
+    } else {
+        console.error('Элемент saveItem не найден!');
+    }
+
+    // Обработчик подтверждения удаления
+    if (confirmDelete) {
+        confirmDelete.addEventListener('click', async () => {
+            const id = document.getElementById('deleteItemId').value;
+
+            // Удаляем элемент из массива
+            items = items.filter(item => item.id !== id);
+            
+            // Сохраняем изменения в JSON
+            await deleteItemFromJSON(id);
+            
+            // Обновляем localStorage в любом случае
+            localStorage.setItem('galleryItems', JSON.stringify(items));
+
+            // Обновляем галерею
+            renderGallery();
+
+            // Закрываем модальное окно
+            if (deleteModal) {
+                deleteModal.style.display = 'none';
+            }
+        });
+        console.log('Обработчик подтверждения удаления установлен');
+    } else {
+        console.error('Элемент confirmDelete не найден!');
+    }
+    
+    // Возвращаем объекты DOM для использования в других функциях
+    return {
+        addButton, sortButton, filterButton, filterOptions, searchBox,
+        itemModal, deleteModal, closeModal, closeDeleteModal,
+        saveItem, cancelDelete, confirmDelete, gallery, modalTitle
+    };
+}
 
 // Функция для сохранения данных в GitHub
 async function saveToGitHub(data) {
@@ -108,31 +315,6 @@ async function loadFromGitHub() {
         return [];
     }
 }
-
-// Загрузка данных при загрузке страницы
-document.addEventListener('DOMContentLoaded', async () => {
-    // Загружаем данные из JSON или localStorage
-    await loadDataFromJSON();
-    renderGallery();
-    
-    console.log('Страница загружена, проверяем кнопки:');
-    console.log('- Кнопка добавления:', addButton);
-    console.log('- Кнопка сортировки:', sortButton);
-    console.log('- Кнопка фильтра:', filterButton);
-    
-    // Проверяем, что обработчики событий прикреплены правильно
-    if (addButton) {
-        console.log('Обработчик кнопки добавления установлен');
-    }
-    
-    if (sortButton) {
-        console.log('Обработчик кнопки сортировки установлен');
-    }
-    
-    if (filterButton) {
-        console.log('Обработчик кнопки фильтра установлен');
-    }
-});
 
 // Функция для сохранения данных в JSON
 async function saveDataToJSON(data) {
@@ -280,141 +462,67 @@ function sortItems(items) {
     });
 }
 
-// Открыть модальное окно при нажатии на кнопку добавления
-addButton.addEventListener('click', () => {
-    // Сбрасываем поля формы
-    document.getElementById('itemId').value = '';
-    document.getElementById('itemTitle').value = '';
-    document.getElementById('itemImage').value = '';
-    document.getElementById('itemContent').value = '';
+// Функция для открытия формы редактирования
+function editItem(id) {
+    const item = items.find(item => item.id === id);
+    if (item) {
+        // Заполняем форму данными элемента
+        document.getElementById('itemId').value = item.id;
+        document.getElementById('itemTitle').value = item.title;
+        document.getElementById('itemImage').value = item.imageUrl;
+        document.getElementById('itemContent').value = item.content || '';
 
-    // Меняем заголовок модального окна
-    modalTitle.textContent = 'Добавить новый элемент';
-
-    // Отображаем модальное окно
-    itemModal.style.display = 'block';
-});
-
-// Обработчик кнопки сортировки
-sortButton.addEventListener('click', () => {
-    isSorted = !isSorted;
-
-    if (isSorted) {
-        sortButton.textContent = 'Отменить сортировку';
-        sortButton.style.backgroundColor = '#ff9800';
-    } else {
-        sortButton.textContent = 'Сортировка';
-        sortButton.style.backgroundColor = '#2196F3';
-    }
-
-    renderGallery();
-});
-
-// Показать/скрыть опции фильтра
-filterButton.addEventListener('click', () => {
-    filterOptions.style.display = filterOptions.style.display === 'block' ? 'none' : 'block';
-});
-
-// Закрыть опции фильтра при клике вне
-document.addEventListener('click', (event) => {
-    if (!event.target.closest('.filter-btn') && !event.target.closest('.filter-options')) {
-        filterOptions.style.display = 'none';
-    }
-});
-
-// Обработчики для опций фильтра
-document.querySelectorAll('.filter-option').forEach(option => {
-    option.addEventListener('click', () => {
-        currentFilter = option.dataset.filter;
-
-        // Обновляем активный класс
-        document.querySelectorAll('.filter-option').forEach(opt => {
-            opt.classList.remove('active-filter');
-        });
-        option.classList.add('active-filter');
-
-        // Обновляем текст кнопки фильтра
-        filterButton.textContent = 'Фильтр: ' + option.textContent;
-
-        // Скрываем опции фильтра
-        filterOptions.style.display = 'none';
-
-        // Обновляем галерею
-        renderGallery();
-    });
-});
-
-// Поиск по названию
-searchBox.addEventListener('input', () => {
-    renderGallery();
-});
-
-// Закрыть модальные окна
-closeModal.addEventListener('click', () => {
-    itemModal.style.display = 'none';
-});
-
-closeDeleteModal.addEventListener('click', () => {
-    deleteModal.style.display = 'none';
-});
-
-cancelDelete.addEventListener('click', () => {
-    deleteModal.style.display = 'none';
-});
-
-// Закрыть модальные окна при клике вне их
-window.addEventListener('click', (event) => {
-    if (event.target === itemModal) {
-        itemModal.style.display = 'none';
-    }
-    if (event.target === deleteModal) {
-        deleteModal.style.display = 'none';
-    }
-});
-
-// Обработчик сохранения
-saveItem.addEventListener('click', async () => {
-    const id = document.getElementById('itemId').value;
-    const title = document.getElementById('itemTitle').value;
-    const imageUrl = document.getElementById('itemImage').value;
-    const content = document.getElementById('itemContent').value;
-
-    if (title && imageUrl) {
-        const newId = id || Date.now().toString();
-        const itemData = { id: newId, title, imageUrl, content };
-        
-        // Обновляем локальный массив
-        if (id) {
-            const index = items.findIndex(item => item.id === id);
-            if (index !== -1) {
-                items[index] = itemData;
-            }
-        } else {
-            items.push(itemData);
+        // Меняем заголовок модального окна
+        const modalTitle = document.getElementById('modalTitle');
+        if (modalTitle) {
+            modalTitle.textContent = 'Редактировать элемент';
         }
-        
-        // Сохраняем данные в JSON
-        await saveItemToJSON(itemData);
-        
-        // Обновляем галерею
-        renderGallery();
-        
-        // Закрываем модальное окно
-        itemModal.style.display = 'none';
-    } else {
-        alert('Пожалуйста, заполните все обязательные поля');
+
+        // Отображаем модальное окно
+        const itemModal = document.getElementById('itemModal');
+        if (itemModal) {
+            itemModal.style.display = 'block';
+        }
     }
-});
+}
+
+// Функция для отображения подтверждения удаления
+function showDeleteConfirmation(id) {
+    const deleteItemId = document.getElementById('deleteItemId');
+    const deleteModal = document.getElementById('deleteModal');
+    
+    if (deleteItemId && deleteModal) {
+        deleteItemId.value = id;
+        deleteModal.style.display = 'block';
+    }
+}
+
+// Функция для открытия страницы элемента
+function openItemPage(id) {
+    const item = items.find(item => item.id === id);
+    if (item) {
+        // Присоединяем параметры к URL
+        const itemPageUrl = 'Инфо.html?id=' + encodeURIComponent(item.id);
+        window.open(itemPageUrl, '_blank');
+    }
+}
 
 // Функция для отображения галереи
 function renderGallery() {
+    const gallery = document.getElementById('gallery');
+    if (!gallery) {
+        console.error('Элемент gallery не найден!');
+        return;
+    }
+    
     gallery.innerHTML = '';
     
     // Применяем фильтрацию
     let displayItems = items;
     
     // Фильтрация по поисковому запросу
-    const searchQuery = searchBox.value.toLowerCase().trim();
+    const searchBox = document.getElementById('searchBox');
+    const searchQuery = searchBox ? searchBox.value.toLowerCase().trim() : '';
     if (searchQuery) {
         displayItems = displayItems.filter(item => 
             item.title.toLowerCase().includes(searchQuery) || 
@@ -485,60 +593,6 @@ function renderGallery() {
     });
 }
 
-// Функция для открытия формы редактирования
-function editItem(id) {
-    const item = items.find(item => item.id === id);
-    if (item) {
-        // Заполняем форму данными элемента
-        document.getElementById('itemId').value = item.id;
-        document.getElementById('itemTitle').value = item.title;
-        document.getElementById('itemImage').value = item.imageUrl;
-        document.getElementById('itemContent').value = item.content || '';
-
-        // Меняем заголовок модального окна
-        modalTitle.textContent = 'Редактировать элемент';
-
-        // Отображаем модальное окно
-        itemModal.style.display = 'block';
-    }
-}
-
-// Функция для отображения подтверждения удаления
-function showDeleteConfirmation(id) {
-    document.getElementById('deleteItemId').value = id;
-    deleteModal.style.display = 'block';
-}
-
-// Обработчик подтверждения удаления
-confirmDelete.addEventListener('click', async () => {
-    const id = document.getElementById('deleteItemId').value;
-
-    // Удаляем элемент из массива
-    items = items.filter(item => item.id !== id);
-    
-    // Сохраняем изменения в JSON
-    await deleteItemFromJSON(id);
-    
-    // Обновляем localStorage в любом случае
-    localStorage.setItem('galleryItems', JSON.stringify(items));
-
-    // Обновляем галерею
-    renderGallery();
-
-    // Закрываем модальное окно
-    deleteModal.style.display = 'none';
-});
-
-// Функция для открытия страницы элемента
-function openItemPage(id) {
-    const item = items.find(item => item.id === id);
-    if (item) {
-        // Присоединяем параметры к URL
-        const itemPageUrl = 'Инфо.html?id=' + encodeURIComponent(item.id);
-        window.open(itemPageUrl, '_blank');
-    }
-}
-
 // Функция для автоматического сохранения данных
 function setupAutoSave() {
     // Сохраняем данные каждые 5 минут
@@ -559,9 +613,30 @@ function setupAutoLoad() {
     }, 10 * 60 * 1000); // 10 минут
 }
 
-// Инициализация автоматического сохранения и загрузки
-setupAutoSave();
-setupAutoLoad();
+// Загрузка данных при загрузке страницы
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOM полностью загружен');
+    
+    // Инициализируем элементы DOM и прикрепляем обработчики
+    const domElements = initializeDOM();
+    
+    // Проверяем, что все элементы найдены
+    if (!domElements.gallery) {
+        console.error('Критическая ошибка: элемент gallery не найден!');
+    }
+    
+    // Загружаем данные из JSON или localStorage
+    await loadDataFromJSON();
+    
+    // Отображаем галерею
+    renderGallery();
+    
+    // Инициализация автоматического сохранения и загрузки
+    setupAutoSave();
+    setupAutoLoad();
+    
+    console.log('Инициализация приложения завершена');
+});
 
 // Добавляем обработчик ошибок для отладки
 window.onerror = function(message, source, lineno, colno, error) {
