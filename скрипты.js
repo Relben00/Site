@@ -795,78 +795,10 @@ function renderGallery() {
     if (!gallery) {
         console.error("Элемент gallery не найден");
         return;
-        displayItems.forEach(item => {
-        console.log("Создание элемента:", item);
-        
-        const itemElement = document.createElement('div');
-        itemElement.className = 'gallery-item';
-        itemElement.dataset.id = item.id;
-        
-        // Создаем структуру элемента
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'item-actions';
-        
-        const editBtn = document.createElement('button');
-        editBtn.className = 'edit-btn';
-        editBtn.title = 'Редактировать';
-        editBtn.textContent = '✎';
-        
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-btn';
-        deleteBtn.title = 'Удалить';
-        deleteBtn.textContent = '×';
-        
-        const itemImg = document.createElement('img');
-        itemImg.className = 'item-image';
-        itemImg.src = item.imageUrl;
-        itemImg.alt = item.title;
-        
-        const itemTitle = document.createElement('div');
-        itemTitle.className = 'item-title';
-        itemTitle.textContent = item.title;
-        
-        const itemContent = document.createElement('div');
-        itemContent.className = 'item-content';
-        itemContent.textContent = item.content || '';
-        
-        // Собираем элемент
-        actionsDiv.appendChild(editBtn);
-        actionsDiv.appendChild(deleteBtn);
-        itemElement.appendChild(actionsDiv);
-        itemElement.appendChild(itemImg);
-        itemElement.appendChild(itemTitle);
-        itemElement.appendChild(itemContent);
-        
-        gallery.appendChild(itemElement);
-        
-        // Добавляем обработчики событий
-        editBtn.onclick = function(e) {
-            e.stopPropagation();
-            editItem(item.id);
-        };
-        
-        deleteBtn.onclick = function(e) {
-            e.stopPropagation();
-            showDeleteConfirmation(item.id);
-        };
-        
-        itemImg.onclick = function() {
-            openItemPage(item.id);
-        };
-        
-        itemTitle.onclick = function() {
-            openItemPage(item.id);
-        };
-    });
-    
-    console.log("Галерея обновлена");
-}
     }
     
     // Очищаем галерею
     gallery.innerHTML = '';
-    
-    console.log("Элементы для отображения:", items);
     
     // Если нет элементов
     if (!items || items.length === 0) {
@@ -897,8 +829,6 @@ function renderGallery() {
         displayItems = sortItems(displayItems);
     }
     
-    console.log(`Отображение ${displayItems.length} из ${items.length} элементов`);
-    
     // Если нет элементов после фильтрации
     if (displayItems.length === 0) {
         gallery.innerHTML = '<div class="no-items">Нет элементов для отображения</div>';
@@ -907,29 +837,80 @@ function renderGallery() {
     
     // Отображаем элементы
     displayItems.forEach(item => {
-        console.log("Создание элемента:", item);
-        
+        // Создаем контейнер элемента
         const itemElement = document.createElement('div');
         itemElement.className = 'gallery-item';
         itemElement.dataset.id = item.id;
+        itemElement.style.position = 'relative'; // Гарантируем относительное позиционирование
         
-        itemElement.innerHTML = `
-            <div class="item-actions">
-                <button class="edit-btn" title="Редактировать">✎</button>
-                <button class="delete-btn" title="Удалить">×</button>
-            </div>
-            <img src="${item.imageUrl}" alt="${item.title}" class="item-image">
-            <div class="item-title">${item.title}</div>
-            <div class="item-content">${item.content || ''}</div>
-        `;
+        // Создаем контейнер для кнопок
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'item-actions';
+        actionsDiv.style.position = 'absolute';
+        actionsDiv.style.top = '10px';
+        actionsDiv.style.right = '10px';
+        actionsDiv.style.display = 'flex';
+        actionsDiv.style.gap = '5px';
+        actionsDiv.style.zIndex = '10';
         
-        gallery.appendChild(itemElement);
+        // Создаем кнопку редактирования
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-btn';
+        editBtn.innerText = '✎';
+        editBtn.title = 'Редактировать';
+        editBtn.style.width = '30px';
+        editBtn.style.height = '30px';
+        editBtn.style.borderRadius = '50%';
+        editBtn.style.border = 'none';
+        editBtn.style.backgroundColor = '#2196F3';
+        editBtn.style.color = 'white';
+        editBtn.style.cursor = 'pointer';
+        editBtn.style.display = 'flex';
+        editBtn.style.alignItems = 'center';
+        editBtn.style.justifyContent = 'center';
         
-        // Находим кнопки внутри созданного элемента
-        const editBtn = itemElement.querySelector('.edit-btn');
-        const deleteBtn = itemElement.querySelector('.delete-btn');
-        const itemImage = itemElement.querySelector('.item-image');
-        const itemTitle = itemElement.querySelector('.item-title');
+        // Создаем кнопку удаления
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerText = '×';
+        deleteBtn.title = 'Удалить';
+        deleteBtn.style.width = '30px';
+        deleteBtn.style.height = '30px';
+        deleteBtn.style.borderRadius = '50%';
+        deleteBtn.style.border = 'none';
+        deleteBtn.style.backgroundColor = '#f44336';
+        deleteBtn.style.color = 'white';
+        deleteBtn.style.cursor = 'pointer';
+        deleteBtn.style.display = 'flex';
+        deleteBtn.style.alignItems = 'center';
+        deleteBtn.style.justifyContent = 'center';
+        
+        // Создаем изображение
+        const itemImg = document.createElement('img');
+        itemImg.className = 'item-image';
+        itemImg.src = item.imageUrl;
+        itemImg.alt = item.title;
+        itemImg.style.width = '100%';
+        itemImg.style.height = '160px';
+        itemImg.style.objectFit = 'cover';
+        itemImg.style.borderRadius = '3px';
+        itemImg.style.cursor = 'pointer';
+        
+        // Создаем заголовок
+        const itemTitle = document.createElement('div');
+        itemTitle.className = 'item-title';
+        itemTitle.textContent = item.title;
+        itemTitle.style.fontWeight = 'bold';
+        itemTitle.style.marginTop = '10px';
+        itemTitle.style.cursor = 'pointer';
+        
+        // Создаем содержимое
+        const itemContent = document.createElement('div');
+        itemContent.className = 'item-content';
+        itemContent.textContent = item.content || '';
+        itemContent.style.marginTop = '5px';
+        itemContent.style.fontSize = '14px';
+        itemContent.style.color = '#666';
         
         // Добавляем обработчики событий
         editBtn.onclick = function(e) {
@@ -942,16 +923,37 @@ function renderGallery() {
             showDeleteConfirmation(item.id);
         };
         
-        itemImage.onclick = function() {
+        itemImg.onclick = function() {
             openItemPage(item.id);
         };
         
         itemTitle.onclick = function() {
             openItemPage(item.id);
         };
+        
+        // Добавляем все элементы в контейнер
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(deleteBtn);
+        
+        itemElement.appendChild(actionsDiv);
+        itemElement.appendChild(itemImg);
+        itemElement.appendChild(itemTitle);
+        itemElement.appendChild(itemContent);
+        
+        // Добавляем элемент в галерею
+        gallery.appendChild(itemElement);
+        
+        // Делаем кнопки видимыми только при наведении
+        itemElement.addEventListener('mouseenter', function() {
+            actionsDiv.style.opacity = '1';
+        });
+        
+        itemElement.addEventListener('mouseleave', function() {
+            actionsDiv.style.opacity = '0';
+        });
     });
     
-    console.log("Галерея обновлена");
+    console.log("Галерея обновлена, элементов:", displayItems.length);
 }
 
 // Функция для редактирования элемента
