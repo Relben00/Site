@@ -8,7 +8,7 @@ const githubConfig = {
     username: 'Relben00',
     repo: 'Site',
     path: 'danns.json',
-    token: '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'
+    token: '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'
 };
 
 // Инициализация после загрузки DOM
