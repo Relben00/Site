@@ -10,5 +10,11 @@
     "title": "Пример элемента 2",
     "imageUrl": "https://example.com/image2.jpg",
     "content": "Это пример контента для второго элемента галереи."
+  },
+  {
+    "id": "1741865048000",
+    "title": "2",
+    "imageUrl": "2",
+    "content": "2"
   }
 ]
