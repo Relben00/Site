@@ -8,7 +8,6 @@ const githubConfig = {
     username: 'Relben00',
     repo: 'Site',
     path: 'danns.json'
-    // Токен будет запрашиваться отдельно
 };
 
 // Инициализация после загрузки DOM
@@ -24,16 +23,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Загрузка данных
     loadInitialData();
 });
-
-// Добавьте эту функцию для применения стилей к элементам галереи
-function applyGalleryStyles() {
-    // Создаем элемент <style>
-    let styleEl = document.getElementById('galleryCustomStyles');
-    if (!styleEl) {
-        styleEl = document.createElement('style');
-        styleEl.id = 'galleryCustomStyles';
-        document.head.appendChild(styleEl);
-    }
 
 // Функция для проверки наличия токена
 function checkGitHubToken() {
@@ -327,8 +316,6 @@ async function loadInitialData() {
 
 // Инициализация кнопок
 function initButtons() {
-    // Применяем стили
-    applyGalleryStyles();
     console.log("Инициализация кнопок...");
     
     // Кнопка добавления
@@ -749,45 +736,7 @@ async function saveToGitHub(data, token) {
     }
 }
 
-// Функция для экспорта данных в JSON файл (локальное скачивание)
-function exportToJsonFile() {
-    console.log("Экспорт данных в JSON файл...");
-    
-    try {
-        // Проверяем, есть ли данные для экспорта
-        if (!items || items.length === 0) {
-            showNotification("Нет данных для экспорта", "warning");
-            return;
-        }
-        
-        // Создаем содержимое файла
-        const jsonContent = JSON.stringify(items, null, 2);
-        
-        // Создаем Blob и ссылку для скачивания
-        const blob = new Blob([jsonContent], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        // Создаем временную ссылку для скачивания
-        const downloadLink = document.createElement('a');
-        downloadLink.href = url;
-        downloadLink.download = 'gallery_data.json';
-        
-        // Добавляем ссылку на страницу, кликаем по ней и удаляем
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        
-        // Освобождаем URL
-        URL.revokeObjectURL(url);
-        
-        showNotification("Данные экспортированы в файл", "success");
-    } catch (error) {
-        console.error("Ошибка при экспорте данных:", error);
-        showNotification("Ошибка при экспорте данных", "error");
-    }
-}
-
-// Функция для отображения галереи
+// Функция для отображения галереи с гарантированными кнопками
 function renderGallery() {
     console.log("Отображение галереи...");
     
@@ -942,15 +891,6 @@ function renderGallery() {
         
         // Добавляем элемент в галерею
         gallery.appendChild(itemElement);
-        
-        // Делаем кнопки видимыми только при наведении
-        itemElement.addEventListener('mouseenter', function() {
-            actionsDiv.style.opacity = '1';
-        });
-        
-        itemElement.addEventListener('mouseleave', function() {
-            actionsDiv.style.opacity = '0';
-        });
     });
     
     console.log("Галерея обновлена, элементов:", displayItems.length);
