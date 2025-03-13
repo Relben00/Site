@@ -1,0 +1,14 @@
+[
+  {
+    "id": "1616845236789",
+    "title": "Пример элемента 1",
+    "imageUrl": "https://avatars.mds.yandex.net/i?id=217aa9757ebf45b4a17bafc2b8b7f55a56a77775-9233495-images-thumbs&n=13",
+    "content": "Это пример контента для первого элемента галереи."
+  },
+  {
+    "id": "1616845236790",
+    "title": "Пример элемента 2",
+    "imageUrl": "https://example.com/image2.jpg",
+    "content": "Это пример контента для второго элемента галереи."
+  }
+]
