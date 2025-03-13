@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -23,6 +23,9 @@
                 </div>
             </div>
             <button class="add-btn" id="addButton">Добавить элемент</button>
+            <!-- Новые кнопки для работы с JSON -->
+            <button class="json-btn save-json-btn" id="saveJsonButton">Сохранить в JSON</button>
+            <button class="json-btn load-json-btn" id="loadJsonButton">Загрузить из JSON</button>
         </div>
     </div>
 
@@ -64,6 +67,11 @@
                 <button class="add-btn" id="confirmDelete" style="background-color: #f44336;">Удалить</button>
             </div>
         </div>
+    </div>
+
+    <!-- Индикатор загрузки -->
+    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+        Загрузка...
     </div>
 
     <script src="скрипты.js"></script>
