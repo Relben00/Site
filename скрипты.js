@@ -215,6 +215,264 @@ function initializeDOM() {
     }
 }
 
+// Функция для добавления кнопок управления JSON в интерфейс
+function addJsonButtons() {
+    console.log("Добавление кнопок для работы с JSON...");
+    
+    // Находим контейнер, куда добавить кнопки (предполагаем, что есть div с классом controls или header)
+    const controlsContainer = document.querySelector('.controls') || document.querySelector('header');
+    
+    if (!controlsContainer) {
+        console.error("Не найден контейнер для кнопок JSON");
+        return;
+    }
+    
+    // Создаем контейнер для кнопок JSON
+    const jsonButtonsContainer = document.createElement('div');
+    jsonButtonsContainer.className = 'json-buttons';
+    jsonButtonsContainer.style.marginLeft = '10px';
+    jsonButtonsContainer.style.display = 'inline-block';
+    
+    // Создаем кнопку сохранения в JSON
+    const saveJsonButton = document.createElement('button');
+    saveJsonButton.id = 'saveJsonButton';
+    saveJsonButton.textContent = 'Сохранить в JSON';
+    saveJsonButton.className = 'json-btn save-json-btn';
+    saveJsonButton.style.backgroundColor = '#4CAF50';
+    saveJsonButton.style.color = 'white';
+    saveJsonButton.style.padding = '8px 16px';
+    saveJsonButton.style.margin = '0 5px';
+    saveJsonButton.style.border = 'none';
+    saveJsonButton.style.borderRadius = '4px';
+    saveJsonButton.style.cursor = 'pointer';
+    
+    // Создаем кнопку загрузки из JSON
+    const loadJsonButton = document.createElement('button');
+    loadJsonButton.id = 'loadJsonButton';
+    loadJsonButton.textContent = 'Загрузить из JSON';
+    loadJsonButton.className = 'json-btn load-json-btn';
+    loadJsonButton.style.backgroundColor = '#2196F3';
+    loadJsonButton.style.color = 'white';
+    loadJsonButton.style.padding = '8px 16px';
+    loadJsonButton.style.margin = '0 5px';
+    loadJsonButton.style.border = 'none';
+    loadJsonButton.style.borderRadius = '4px';
+    loadJsonButton.style.cursor = 'pointer';
+    
+    // Добавляем кнопки в контейнер
+    jsonButtonsContainer.appendChild(saveJsonButton);
+    jsonButtonsContainer.appendChild(loadJsonButton);
+    
+    // Добавляем контейнер с кнопками на страницу
+    controlsContainer.appendChild(jsonButtonsContainer);
+    
+    // Добавляем обработчики событий для кнопок
+    saveJsonButton.onclick = async function() {
+        console.log("Нажата кнопка сохранения в JSON");
+        await saveJsonData();
+    };
+    
+    loadJsonButton.onclick = async function() {
+        console.log("Нажата кнопка загрузки из JSON");
+        await loadJsonData();
+    };
+    
+    console.log("Кнопки для работы с JSON добавлены");
+}
+
+// Функция для сохранения данных в JSON
+async function saveJsonData() {
+    console.log("Сохранение данных в JSON файл...");
+    
+    try {
+        // Показываем индикатор загрузки
+        showLoadingIndicator("Сохранение данных...");
+        
+        // Сохраняем данные в GitHub
+        const result = await saveToGitHub(items);
+        
+        // Скрываем индикатор загрузки
+        hideLoadingIndicator();
+        
+        if (result) {
+            // Показываем уведомление об успешном сохранении
+            showNotification("Данные успешно сохранены в JSON файл", "success");
+            console.log("Данные успешно сохранены в JSON файл");
+        } else {
+            // Показываем уведомление об ошибке
+            showNotification("Ошибка при сохранении данных в JSON файл. Данные сохранены локально.", "error");
+            console.error("Ошибка при сохранении данных в JSON файл");
+        }
+    } catch (error) {
+        // Скрываем индикатор загрузки
+        hideLoadingIndicator();
+        
+        // Показываем уведомление об ошибке
+        showNotification("Ошибка при сохранении: " + error.message, "error");
+        console.error("Ошибка при сохранении данных:", error);
+    }
+}
+
+// Функция для загрузки данных из JSON
+async function loadJsonData() {
+    console.log("Загрузка данных из JSON файла...");
+    
+    try {
+        // Показываем индикатор загрузки
+        showLoadingIndicator("Загрузка данных...");
+        
+        // Загружаем данные из GitHub
+        const loadedItems = await loadFromGitHub();
+        
+        // Скрываем индикатор загрузки
+        hideLoadingIndicator();
+        
+        if (loadedItems && Array.isArray(loadedItems)) {
+            // Обновляем массив элементов
+            items = loadedItems;
+            
+            // Сохраняем в localStorage как резервную копию
+            localStorage.setItem('galleryItems', JSON.stringify(items));
+            
+            // Обновляем галерею
+            renderGallery();
+            
+            // Показываем уведомление об успешной загрузке
+            showNotification(`Загружено ${items.length} элементов из JSON файла`, "success");
+            console.log(`Загружено ${items.length} элементов из JSON файла`);
+        } else {
+            // Показываем уведомление об ошибке
+            showNotification("Ошибка при загрузке данных из JSON файла", "error");
+            console.error("Ошибка при загрузке данных из JSON файла");
+        }
+    } catch (error) {
+        // Скрываем индикатор загрузки
+        hideLoadingIndicator();
+        
+        // Показываем уведомление об ошибке
+        showNotification("Ошибка при загрузке: " + error.message, "error");
+        console.error("Ошибка при загрузке данных:", error);
+    }
+}
+
+// Функция для отображения индикатора загрузки
+function showLoadingIndicator(message) {
+    // Проверяем, существует ли уже индикатор загрузки
+    let loadingIndicator = document.getElementById('loadingIndicator');
+    
+    if (!loadingIndicator) {
+        // Создаем индикатор загрузки
+        loadingIndicator = document.createElement('div');
+        loadingIndicator.id = 'loadingIndicator';
+        loadingIndicator.style.position = 'fixed';
+        loadingIndicator.style.top = '0';
+        loadingIndicator.style.left = '0';
+        loadingIndicator.style.width = '100%';
+        loadingIndicator.style.backgroundColor = '#2196F3';
+        loadingIndicator.style.color = 'white';
+        loadingIndicator.style.padding = '10px';
+        loadingIndicator.style.textAlign = 'center';
+        loadingIndicator.style.zIndex = '9999';
+        
+        document.body.appendChild(loadingIndicator);
+    }
+    
+    loadingIndicator.textContent = message || 'Загрузка...';
+    loadingIndicator.style.display = 'block';
+}
+
+// Функция для скрытия индикатора загрузки
+function hideLoadingIndicator() {
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+    }
+}
+
+// Функция для отображения уведомления
+function showNotification(message, type) {
+    // Создаем элемент уведомления
+    const notification = document.createElement('div');
+    notification.className = 'notification ' + type;
+    notification.textContent = message;
+    
+    // Стилизуем уведомление
+    notification.style.position = 'fixed';
+    notification.style.bottom = '20px';
+    notification.style.right = '20px';
+    notification.style.padding = '10px 20px';
+    notification.style.borderRadius = '4px';
+    notification.style.color = 'white';
+    notification.style.zIndex = '9999';
+    
+    // Выбираем цвет в зависимости от типа уведомления
+    if (type === 'success') {
+        notification.style.backgroundColor = '#4CAF50';
+    } else if (type === 'error') {
+        notification.style.backgroundColor = '#f44336';
+    } else {
+        notification.style.backgroundColor = '#2196F3';
+    }
+    
+    // Добавляем уведомление на страницу
+    document.body.appendChild(notification);
+    
+    // Удаляем уведомление через 3 секунды
+    setTimeout(function() {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.5s';
+        
+        // Удаляем элемент после завершения анимации
+        setTimeout(function() {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 500);
+    }, 3000);
+}
+
+// Модифицируем функцию инициализации, чтобы добавить кнопки JSON
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log("DOM загружен, начинаем инициализацию...");
+    
+    // Инициализация кнопок
+    initButtons();
+    
+    // Добавляем кнопки для работы с JSON
+    addJsonButtons();
+    
+    // Загрузка данных из GitHub
+    try {
+        showLoadingIndicator("Загрузка данных...");
+        items = await loadFromGitHub();
+        hideLoadingIndicator();
+        console.log(`Загружено ${items.length} элементов`);
+    } catch (error) {
+        hideLoadingIndicator();
+        console.error("Ошибка при загрузке данных:", error);
+        
+        // Если не удалось загрузить из GitHub, используем localStorage
+        const storedItems = localStorage.getItem('galleryItems');
+        if (storedItems) {
+            try {
+                items = JSON.parse(storedItems);
+                console.log(`Загружено ${items.length} элементов из localStorage`);
+            } catch (e) {
+                console.error("Ошибка при разборе данных из localStorage:", e);
+                items = [];
+            }
+        } else {
+            console.log("Данные не найдены, создаем пустой массив");
+            items = [];
+        }
+    }
+    
+    // Отображаем галерею
+    renderGallery();
+    
+    console.log("Инициализация завершена");
+});
+
 // Функция для загрузки данных из GitHub
 async function loadFromGitHub() {
     console.log("Загрузка данных из GitHub...");
