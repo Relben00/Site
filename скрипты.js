@@ -29,6 +29,27 @@ function diagnoseDOM() {
     });
 }
 
+// Самый простой тестовый скрипт
+console.log("ТЕСТОВЫЙ СКРИПТ ЗАГРУЖЕН");
+alert("Скрипт подключен и работает");
+
+// Проверяем, что скрипт работает после загрузки DOM
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM ЗАГРУЖЕН");
+    alert("DOM загружен");
+    
+    // Проверяем наличие основных элементов
+    const addButton = document.getElementById('addButton');
+    console.log("Кнопка добавления:", addButton);
+    
+    if (addButton) {
+        // Добавляем обработчик самым простым способом
+        addButton.onclick = function() {
+            alert("Кнопка добавления нажата!");
+        };
+    }
+});
+
 // Инициализация обработчиков событий для кнопок
 function initButtons() {
     console.log("ИНИЦИАЛИЗАЦИЯ КНОПОК:");
