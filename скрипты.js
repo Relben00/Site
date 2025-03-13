@@ -11,92 +11,64 @@ const githubConfig = {
     token: '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'
 };
 
-// Функция для диагностики элементов DOM
-function diagnoseDOM() {
-    console.log("ДИАГНОСТИКА DOM:");
+// Функция для получения элементов DOM после загрузки страницы
+function initializeDOM() {
+    console.log("Инициализация DOM элементов...");
     
-    // Список всех важных элементов для проверки
-    const elements = [
-        'addButton', 'sortButton', 'filterButton', 'filterOptions',
-        'searchBox', 'itemModal', 'deleteModal', 'closeModal',
-        'closeDeleteModal', 'saveItem', 'cancelDelete', 'confirmDelete',
-        'gallery', 'modalTitle'
-    ];
+    // Получаем элементы DOM
+    const addButton = document.getElementById('addButton');
+    const sortButton = document.getElementById('sortButton');
+    const filterButton = document.getElementById('filterButton');
+    const filterOptions = document.getElementById('filterOptions');
+    const searchBox = document.getElementById('searchBox');
+    const itemModal = document.getElementById('itemModal');
+    const deleteModal = document.getElementById('deleteModal');
+    const closeModal = document.getElementById('closeModal');
+    const closeDeleteModal = document.getElementById('closeDeleteModal');
+    const saveItem = document.getElementById('saveItem');
+    const cancelDelete = document.getElementById('cancelDelete');
+    const confirmDelete = document.getElementById('confirmDelete');
+    const gallery = document.getElementById('gallery');
+    const modalTitle = document.getElementById('modalTitle');
     
-    elements.forEach(id => {
-        const element = document.getElementById(id);
-        console.log(`${id}: ${element ? "НАЙДЕН" : "НЕ НАЙДЕН"}`);
+    // Проверяем наличие элементов
+    console.log("Элементы DOM:", {
+        addButton: !!addButton,
+        sortButton: !!sortButton,
+        filterButton: !!filterButton,
+        filterOptions: !!filterOptions,
+        searchBox: !!searchBox,
+        itemModal: !!itemModal,
+        deleteModal: !!deleteModal,
+        gallery: !!gallery
     });
-}
-
-// Самый простой тестовый скрипт
-console.log("ТЕСТОВЫЙ СКРИПТ ЗАГРУЖЕН");
-alert("Скрипт подключен и работает");
-
-// Проверяем, что скрипт работает после загрузки DOM
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("DOM ЗАГРУЖЕН");
-    alert("DOM загружен");
     
-    // Проверяем наличие основных элементов
-    const addButton = document.getElementById('addButton');
-    console.log("Кнопка добавления:", addButton);
-    
+    // Открыть модальное окно при нажатии на кнопку добавления
     if (addButton) {
-        // Добавляем обработчик самым простым способом
-        addButton.onclick = function() {
-            alert("Кнопка добавления нажата!");
-        };
-    }
-});
-
-// Инициализация обработчиков событий для кнопок
-function initButtons() {
-    console.log("ИНИЦИАЛИЗАЦИЯ КНОПОК:");
-    
-    // Кнопка добавления
-    const addButton = document.getElementById('addButton');
-    if (addButton) {
-        console.log("Настройка кнопки добавления");
         addButton.onclick = function() {
             console.log("Нажата кнопка добавления");
             
             // Сбрасываем поля формы
-            const idInput = document.getElementById('itemId');
-            const titleInput = document.getElementById('itemTitle');
-            const imageInput = document.getElementById('itemImage');
-            const contentInput = document.getElementById('itemContent');
-            const modalTitle = document.getElementById('modalTitle');
-            
-            if (idInput) idInput.value = '';
-            if (titleInput) titleInput.value = '';
-            if (imageInput) imageInput.value = '';
-            if (contentInput) contentInput.value = '';
-            
+            document.getElementById('itemId').value = '';
+            document.getElementById('itemTitle').value = '';
+            document.getElementById('itemImage').value = '';
+            document.getElementById('itemContent').value = '';
+
             // Меняем заголовок модального окна
-            if (modalTitle) modalTitle.textContent = 'Добавить новый элемент';
-            
+            modalTitle.textContent = 'Добавить новый элемент';
+
             // Отображаем модальное окно
-            const itemModal = document.getElementById('itemModal');
-            if (itemModal) {
-                itemModal.style.display = 'block';
-            } else {
-                console.error("Модальное окно не найдено!");
-            }
+            itemModal.style.display = 'block';
         };
-    } else {
-        console.error("Кнопка добавления не найдена!");
     }
-    
-    // Кнопка сортировки
-    const sortButton = document.getElementById('sortButton');
+
+    // Обработчик кнопки сортировки
     if (sortButton) {
-        console.log("Настройка кнопки сортировки");
         sortButton.onclick = function() {
             console.log("Нажата кнопка сортировки");
             
             isSorted = !isSorted;
-            
+
             if (isSorted) {
                 sortButton.textContent = 'Отменить сортировку';
                 sortButton.style.backgroundColor = '#ff9800';
@@ -104,75 +76,99 @@ function initButtons() {
                 sortButton.textContent = 'Сортировка';
                 sortButton.style.backgroundColor = '#2196F3';
             }
-            
+
             renderGallery();
         };
-    } else {
-        console.error("Кнопка сортировки не найдена!");
     }
-    
-    // Кнопка фильтра
-    const filterButton = document.getElementById('filterButton');
-    const filterOptions = document.getElementById('filterOptions');
-    
-    if (filterButton) {
-        console.log("Настройка кнопки фильтра");
+
+    // Показать/скрыть опции фильтра
+    if (filterButton && filterOptions) {
         filterButton.onclick = function() {
             console.log("Нажата кнопка фильтра");
             
-            if (filterOptions) {
-                filterOptions.style.display = filterOptions.style.display === 'block' ? 'none' : 'block';
-            } else {
-                console.error("Элемент опций фильтра не найден!");
-            }
+            filterOptions.style.display = filterOptions.style.display === 'block' ? 'none' : 'block';
         };
-    } else {
-        console.error("Кнопка фильтра не найдена!");
     }
-    
-    // Опции фильтра
+
+    // Закрыть опции фильтра при клике вне
+    document.onclick = function(event) {
+        if (filterOptions && filterOptions.style.display === 'block' && 
+            !event.target.closest('.filter-btn') && 
+            !event.target.closest('.filter-options')) {
+            filterOptions.style.display = 'none';
+        }
+    };
+
+    // Обработчики для опций фильтра
     document.querySelectorAll('.filter-option').forEach(option => {
         option.onclick = function() {
             console.log("Выбрана опция фильтра:", this.textContent);
             
             currentFilter = this.dataset.filter;
-            
+
             // Обновляем активный класс
             document.querySelectorAll('.filter-option').forEach(opt => {
                 opt.classList.remove('active-filter');
             });
             this.classList.add('active-filter');
-            
+
             // Обновляем текст кнопки фильтра
             if (filterButton) {
                 filterButton.textContent = 'Фильтр: ' + this.textContent;
             }
-            
+
             // Скрываем опции фильтра
             if (filterOptions) {
                 filterOptions.style.display = 'none';
             }
-            
+
+            // Обновляем галерею
             renderGallery();
         };
     });
-    
-    // Поле поиска
-    const searchBox = document.getElementById('searchBox');
+
+    // Поиск по названию
     if (searchBox) {
-        console.log("Настройка поля поиска");
         searchBox.oninput = function() {
-            console.log("Ввод в поле поиска");
+            console.log("Поиск:", this.value);
             renderGallery();
         };
-    } else {
-        console.error("Поле поиска не найдено!");
     }
-    
-    // Кнопка сохранения элемента
-    const saveItem = document.getElementById('saveItem');
+
+    // Закрыть модальные окна
+    if (closeModal && itemModal) {
+        closeModal.onclick = function() {
+            console.log("Закрытие модального окна добавления/редактирования");
+            itemModal.style.display = 'none';
+        };
+    }
+
+    if (closeDeleteModal && deleteModal) {
+        closeDeleteModal.onclick = function() {
+            console.log("Закрытие модального окна удаления");
+            deleteModal.style.display = 'none';
+        };
+    }
+
+    if (cancelDelete && deleteModal) {
+        cancelDelete.onclick = function() {
+            console.log("Отмена удаления");
+            deleteModal.style.display = 'none';
+        };
+    }
+
+    // Закрыть модальные окна при клике вне их
+    window.onclick = function(event) {
+        if (itemModal && event.target === itemModal) {
+            itemModal.style.display = 'none';
+        }
+        if (deleteModal && event.target === deleteModal) {
+            deleteModal.style.display = 'none';
+        }
+    };
+
+    // Обработчик сохранения
     if (saveItem) {
-        console.log("Настройка кнопки сохранения");
         saveItem.onclick = async function() {
             console.log("Нажата кнопка сохранения");
             
@@ -180,8 +176,10 @@ function initButtons() {
             const title = document.getElementById('itemTitle').value;
             const imageUrl = document.getElementById('itemImage').value;
             const content = document.getElementById('itemContent').value;
-            
+
             if (title && imageUrl) {
+                console.log("Сохранение элемента:", { title, imageUrl });
+                
                 const newId = id || Date.now().toString();
                 const itemData = { id: newId, title, imageUrl, content };
                 
@@ -189,7 +187,6 @@ function initButtons() {
                 await saveItemToJSON(itemData);
                 
                 // Закрываем модальное окно
-                const itemModal = document.getElementById('itemModal');
                 if (itemModal) {
                     itemModal.style.display = 'none';
                 }
@@ -197,74 +194,25 @@ function initButtons() {
                 alert('Пожалуйста, заполните все обязательные поля');
             }
         };
-    } else {
-        console.error("Кнопка сохранения не найдена!");
     }
-    
-    // Кнопки закрытия модальных окон
-    const closeModal = document.getElementById('closeModal');
-    const itemModal = document.getElementById('itemModal');
-    
-    if (closeModal && itemModal) {
-        console.log("Настройка кнопки закрытия модального окна");
-        closeModal.onclick = function() {
-            console.log("Нажата кнопка закрытия модального окна");
-            itemModal.style.display = 'none';
-        };
-    } else {
-        console.error("Кнопка закрытия модального окна не найдена!");
-    }
-    
-    // Кнопки модального окна удаления
-    const closeDeleteModal = document.getElementById('closeDeleteModal');
-    const cancelDelete = document.getElementById('cancelDelete');
-    const confirmDelete = document.getElementById('confirmDelete');
-    const deleteModal = document.getElementById('deleteModal');
-    
-    if (closeDeleteModal && deleteModal) {
-        console.log("Настройка кнопки закрытия окна удаления");
-        closeDeleteModal.onclick = function() {
-            console.log("Нажата кнопка закрытия окна удаления");
-            deleteModal.style.display = 'none';
-        };
-    } else {
-        console.error("Кнопка закрытия окна удаления не найдена!");
-    }
-    
-    if (cancelDelete && deleteModal) {
-        console.log("Настройка кнопки отмены удаления");
-        cancelDelete.onclick = function() {
-            console.log("Нажата кнопка отмены удаления");
-            deleteModal.style.display = 'none';
-        };
-    } else {
-        console.error("Кнопка отмены удаления не найдена!");
-    }
-    
-    if (confirmDelete && deleteModal) {
-        console.log("Настройка кнопки подтверждения удаления");
+
+    // Обработчик подтверждения удаления
+    if (confirmDelete) {
         confirmDelete.onclick = async function() {
-            console.log("Нажата кнопка подтверждения удаления");
+            console.log("Подтверждение удаления");
             
             const id = document.getElementById('deleteItemId').value;
+            console.log("Удаление элемента с ID:", id);
+            
+            // Удаляем элемент
             await deleteItemFromJSON(id);
             
             // Закрываем модальное окно
-            deleteModal.style.display = 'none';
+            if (deleteModal) {
+                deleteModal.style.display = 'none';
+            }
         };
-    } else {
-        console.error("Кнопка подтверждения удаления не найдена!");
     }
-    
-    // Закрытие модальных окон при клике вне их
-    window.onclick = function(event) {
-        if (event.target === itemModal) {
-            itemModal.style.display = 'none';
-        }
-        if (event.target === deleteModal) {
-            deleteModal.style.display = 'none';
-        }
-    };
 }
 
 // Функция для загрузки данных из GitHub
@@ -287,6 +235,11 @@ async function loadFromGitHub() {
         if (response.status === 200) {
             const fileInfo = await response.json();
             
+            // Проверяем, что получен корректный ответ
+            if (!fileInfo.content) {
+                throw new Error('Получен некорректный ответ от GitHub API');
+            }
+            
             // Декодируем содержимое из base64
             const content = decodeURIComponent(escape(atob(fileInfo.content)));
             const data = JSON.parse(content);
@@ -294,7 +247,7 @@ async function loadFromGitHub() {
             console.log(`Загружено ${data.length} элементов из GitHub`);
             return data;
         } else if (response.status === 404) {
-            console.log("Файл не найден в GitHub, создаем пустой список");
+            console.log("Файл не найден в GitHub, создаем новый список");
             return [];
         } else {
             throw new Error(`Ошибка GitHub API: ${response.status}`);
@@ -303,6 +256,7 @@ async function loadFromGitHub() {
         console.error("Ошибка при загрузке из GitHub:", error);
         
         // Загружаем из localStorage как резервную копию
+        console.log("Пытаемся загрузить из localStorage...");
         const storedItems = localStorage.getItem('galleryItems');
         if (storedItems) {
             try {
@@ -314,7 +268,7 @@ async function loadFromGitHub() {
                 return [];
             }
         }
-        
+        console.log("Данные в localStorage не найдены, создаем пустой список");
         return [];
     }
 }
@@ -338,6 +292,9 @@ async function saveToGitHub(data) {
         if (getResponse.status === 200) {
             const fileInfo = await getResponse.json();
             sha = fileInfo.sha;
+            console.log("Получен SHA существующего файла:", sha);
+        } else {
+            console.log("Файл не существует в GitHub, будет создан новый");
         }
         
         // Подготавливаем данные для сохранения
@@ -364,6 +321,8 @@ async function saveToGitHub(data) {
             return true;
         } else {
             console.error("Ошибка при сохранении в GitHub:", updateResponse.status);
+            const errorData = await updateResponse.text();
+            console.error("Данные ошибки:", errorData);
             throw new Error(`Ошибка GitHub API при сохранении: ${updateResponse.status}`);
         }
     } catch (error) {
@@ -371,6 +330,7 @@ async function saveToGitHub(data) {
         
         // Сохраняем локально как резервную копию
         localStorage.setItem('galleryItems', JSON.stringify(data));
+        console.log("Данные сохранены локально в localStorage");
         
         return false;
     }
@@ -390,20 +350,33 @@ async function saveItemToJSON(item) {
     const index = items.findIndex(i => i.id === item.id);
     if (index !== -1) {
         items[index] = item;
+        console.log("Элемент обновлен в локальном массиве");
     } else {
         items.push(item);
+        console.log("Элемент добавлен в локальный массив");
     }
     
     // Сохраняем в localStorage в любом случае
     localStorage.setItem('galleryItems', JSON.stringify(items));
+    console.log("Элементы сохранены в localStorage");
     
     // Сохраняем в GitHub
     try {
-        await saveToGitHub(items);
-        renderGallery(); // Обновляем галерею
-        return true;
+        const result = await saveToGitHub(items);
+        if (result) {
+            console.log("Элементы успешно сохранены в GitHub");
+        } else {
+            console.log("Элементы сохранены только локально");
+        }
+        
+        // Обновляем галерею
+        renderGallery();
+        return result;
     } catch (error) {
-        renderGallery(); // Обновляем галерею в любом случае
+        console.error("Ошибка при сохранении элемента:", error);
+        
+        // Обновляем галерею в любом случае
+        renderGallery();
         return false;
     }
 }
@@ -418,18 +391,36 @@ async function deleteItemFromJSON(id) {
     }
     
     // Удаляем элемент из массива
+    const originalLength = items.length;
     items = items.filter(item => item.id !== id);
+    
+    if (items.length === originalLength) {
+        console.log("Элемент с ID", id, "не найден в массиве");
+    } else {
+        console.log("Элемент удален из локального массива");
+    }
     
     // Сохраняем обновленный массив в localStorage
     localStorage.setItem('galleryItems', JSON.stringify(items));
+    console.log("Обновленные элементы сохранены в localStorage");
     
     // Сохраняем в GitHub
     try {
-        await saveToGitHub(items);
-        renderGallery(); // Обновляем галерею
-        return true;
+        const result = await saveToGitHub(items);
+        if (result) {
+            console.log("Элементы успешно сохранены в GitHub после удаления");
+        } else {
+            console.log("Элементы сохранены только локально после удаления");
+        }
+        
+        // Обновляем галерею
+        renderGallery();
+        return result;
     } catch (error) {
-        renderGallery(); // Обновляем галерею в любом случае
+        console.error("Ошибка при удалении элемента:", error);
+        
+        // Обновляем галерею в любом случае
+        renderGallery();
         return false;
     }
 }
@@ -455,6 +446,7 @@ function getCharType(str) {
         return 'russian';
     }
 
+    // Если ничего из вышеперечисленного, то это другой символ
     return 'other';
 }
 
@@ -508,6 +500,8 @@ function editItem(id) {
         if (itemModal) {
             itemModal.style.display = 'block';
         }
+    } else {
+        console.error("Элемент с ID", id, "не найден");
     }
 }
 
@@ -521,6 +515,8 @@ function showDeleteConfirmation(id) {
     if (deleteItemId && deleteModal) {
         deleteItemId.value = id;
         deleteModal.style.display = 'block';
+    } else {
+        console.error("Элементы модального окна удаления не найдены");
     }
 }
 
@@ -533,6 +529,8 @@ function openItemPage(id) {
         // Присоединяем параметры к URL
         const itemPageUrl = 'Инфо.html?id=' + encodeURIComponent(item.id);
         window.open(itemPageUrl, '_blank');
+    } else {
+        console.error("Элемент с ID", id, "не найден");
     }
 }
 
@@ -570,6 +568,8 @@ function renderGallery() {
     if (isSorted) {
         displayItems = sortItems(displayItems);
     }
+    
+    console.log(`Отображение ${displayItems.length} из ${items.length} элементов`);
     
     // Если нет элементов для отображения
     if (displayItems.length === 0) {
@@ -622,19 +622,31 @@ function renderGallery() {
         
         gallery.appendChild(itemElement);
     });
+    
+    console.log("Галерея обновлена");
+}
+
+// Функция для автоматического сохранения данных
+function setupAutoSave() {
+    console.log("Настройка автоматического сохранения...");
+    
+    // Сохраняем данные каждые 5 минут
+    setInterval(async () => {
+        if (items.length > 0) {
+            console.log("Автоматическое сохранение...");
+            await saveToGitHub(items);
+        }
+    }, 5 * 60 * 1000); // 5 минут
 }
 
 // Загрузка данных при загрузке страницы
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log("DOM загружен, начинаем инициализацию...");
     
-    // Диагностика DOM-элементов
-    diagnoseDOM();
+    // Инициализируем элементы DOM
+    initializeDOM();
     
-    // Инициализация кнопок
-    initButtons();
-    
-    // Загрузка данных из GitHub
+    // Загружаем данные из GitHub
     try {
         items = await loadFromGitHub();
         console.log(`Загружено ${items.length} элементов`);
@@ -660,12 +672,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Отображаем галерею
     renderGallery();
     
+    // Настраиваем автоматическое сохранение
+    setupAutoSave();
+    
     console.log("Инициализация завершена");
 });
-
-// Дополнительная проверка после полной загрузки страницы
-window.onload = function() {
-    console.log("Страница полностью загружена, повторная проверка кнопок...");
-    diagnoseDOM();
-    initButtons();
-};
