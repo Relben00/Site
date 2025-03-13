@@ -324,27 +324,52 @@ async function loadJsonData() {
         // Загружаем данные из GitHub
         const loadedItems = await loadFromGitHub();
         
+        console.log("Полученные данные:", loadedItems);
+        
+        // Проверка структуры данных
+        if (!loadedItems) {
+            throw new Error("Данные не были получены");
+        }
+        
+        // Проверяем, является ли результат массивом
+        const dataArray = Array.isArray(loadedItems) ? loadedItems : [loadedItems];
+        
+        // Проверка, что элементы массива имеют нужную структуру
+        const validItems = dataArray.filter(item => {
+            const isValid = item && item.id && item.title && item.imageUrl;
+            if (!isValid) {
+                console.warn("Некорректный элемент:", item);
+            }
+            return isValid;
+        });
+        
+        console.log(`Проверено ${dataArray.length} элементов, валидных: ${validItems.length}`);
+        
+        if (validItems.length === 0) {
+            throw new Error("В JSON файле отсутствуют корректные элементы");
+        }
+        
+        // Обновляем массив элементов
+        items = validItems;
+        console.log("Обновлен массив items:", items);
+        
+        // Сохраняем в localStorage как резервную копию
+        localStorage.setItem('galleryItems', JSON.stringify(items));
+        
+        // Обновляем галерею
+        renderGallery();
+        
+        // Проверяем, отображаются ли элементы
+        setTimeout(() => {
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            console.log(`После рендеринга в галерее ${galleryItems.length} элементов`);
+        }, 100);
+        
         // Скрываем индикатор загрузки
         hideLoadingIndicator();
         
-        if (loadedItems && Array.isArray(loadedItems)) {
-            // Обновляем массив элементов
-            items = loadedItems;
-            
-            // Сохраняем в localStorage как резервную копию
-            localStorage.setItem('galleryItems', JSON.stringify(items));
-            
-            // Обновляем галерею
-            renderGallery();
-            
-            // Показываем уведомление об успешной загрузке
-            showNotification(`Загружено ${items.length} элементов из JSON файла`, "success");
-            console.log(`Загружено ${items.length} элементов из JSON файла`);
-        } else {
-            // Показываем уведомление об ошибке
-            showNotification("Ошибка при загрузке данных из JSON файла", "error");
-            console.error("Ошибка при загрузке данных из JSON файла");
-        }
+        // Показываем уведомление об успешной загрузке
+        showNotification(`Загружено ${items.length} элементов из JSON файла`, "success");
     } catch (error) {
         // Скрываем индикатор загрузки
         hideLoadingIndicator();
@@ -352,6 +377,161 @@ async function loadJsonData() {
         // Показываем уведомление об ошибке
         showNotification("Ошибка при загрузке: " + error.message, "error");
         console.error("Ошибка при загрузке данных:", error);
+    }
+}
+
+// Также проверим функцию renderGallery()
+function renderGallery() {
+    console.log("Отображение галереи...", items);
+    
+    const gallery = document.getElementById('gallery');
+    if (!gallery) {
+        console.error('Элемент gallery не найден!');
+        return;
+    }
+    
+    // Очищаем галерею
+    gallery.innerHTML = '';
+    
+    // Проверяем наличие данных
+    if (!items || items.length === 0) {
+        console.warn("Нет элементов для отображения");
+        gallery.innerHTML = '<div class="no-items">Нет элементов для отображения</div>';
+        return;
+    }
+    
+    // Применяем фильтрацию
+    let displayItems = [...items];
+    
+    // Фильтрация по поисковому запросу
+    const searchBox = document.getElementById('searchBox');
+    const searchQuery = searchBox ? searchBox.value.toLowerCase().trim() : '';
+    if (searchQuery) {
+        displayItems = displayItems.filter(item => 
+            item.title.toLowerCase().includes(searchQuery) || 
+            (item.content && item.content.toLowerCase().includes(searchQuery))
+        );
+    }
+    
+    // Фильтрация по типу
+    if (currentFilter !== 'all') {
+        displayItems = displayItems.filter(item => getCharType(item.title) === currentFilter);
+    }
+    
+    // Применяем сортировку
+    if (isSorted) {
+        displayItems = sortItems(displayItems);
+    }
+    
+    console.log(`Отображаем ${displayItems.length} из ${items.length} элементов`);
+    
+    // Если нет элементов для отображения после фильтрации
+    if (displayItems.length === 0) {
+        gallery.innerHTML = '<div class="no-items">Нет элементов для отображения</div>';
+        return;
+    }
+    
+    // Отображаем элементы
+    displayItems.forEach(item => {
+        console.log("Создаем элемент:", item);
+        
+        const itemElement = document.createElement('div');
+        itemElement.className = 'gallery-item';
+        itemElement.dataset.id = item.id;
+        
+        itemElement.innerHTML = `
+            <div class="item-actions">
+                <button class="edit-btn" title="Редактировать">✎</button>
+                <button class="delete-btn" title="Удалить">×</button>
+            </div>
+            <img src="${item.imageUrl}" alt="${item.title}" class="item-image">
+            <div class="item-title">${item.title}</div>
+            <div class="item-content">${item.content || ''}</div>
+        `;
+        
+        // Находим элементы внутри созданного элемента
+        const itemImage = itemElement.querySelector('.item-image');
+        const itemTitle = itemElement.querySelector('.item-title');
+        const editBtn = itemElement.querySelector('.edit-btn');
+        const deleteBtn = itemElement.querySelector('.delete-btn');
+        
+        // Обработчик клика для редактирования
+        editBtn.onclick = function(e) {
+            e.stopPropagation();
+            editItem(item.id);
+        };
+        
+        // Обработчик клика для удаления
+        deleteBtn.onclick = function(e) {
+            e.stopPropagation();
+            showDeleteConfirmation(item.id);
+        };
+        
+        // Обработчик клика на изображение или заголовок для открытия страницы
+        itemImage.onclick = function() {
+            openItemPage(item.id);
+        };
+        
+        itemTitle.onclick = function() {
+            openItemPage(item.id);
+        };
+        
+        gallery.appendChild(itemElement);
+    });
+    
+    console.log("Галерея обновлена");
+}
+
+// Также нужно проверить функцию loadFromGitHub
+async function loadFromGitHub() {
+    console.log("Загрузка данных из GitHub...");
+    
+    try {
+        const { username, repo, path, token } = githubConfig;
+        
+        console.log("GitHub конфигурация:", { username, repo, path });
+        
+        // Получаем файл
+        const response = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        console.log("Ответ GitHub API:", response.status);
+        
+        if (response.status === 200) {
+            const fileInfo = await response.json();
+            
+            // Проверяем, что получен корректный ответ
+            if (!fileInfo.content) {
+                console.error("Отсутствует содержимое в ответе GitHub API:", fileInfo);
+                throw new Error('Получен некорректный ответ от GitHub API');
+            }
+            
+            // Декодируем содержимое из base64
+            try {
+                const content = decodeURIComponent(escape(atob(fileInfo.content)));
+                console.log("Декодированный контент:", content.substring(0, 100) + "...");
+                
+                const data = JSON.parse(content);
+                console.log("Разобранные данные:", data);
+                
+                return data;
+            } catch (parseError) {
+                console.error("Ошибка при декодировании/разборе контента:", parseError);
+                throw new Error("Не удалось разобрать JSON из GitHub");
+            }
+        } else {
+            console.error("Ошибка API GitHub:", response.status);
+            const errorText = await response.text();
+            console.error("Текст ошибки:", errorText);
+            throw new Error(`Ошибка GitHub API: ${response.status}`);
+        }
+    } catch (error) {
+        console.error("Ошибка при загрузке из GitHub:", error);
+        throw error; // Пробрасываем ошибку выше для обработки
     }
 }
 
