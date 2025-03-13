@@ -287,3 +287,8 @@ input, textarea, select {
     margin-left: 10px;
     font-size: 14px;
 }
+
+/* Обеспечиваем видимость кнопок в любом случае */
+.item-actions {
+    opacity: 1 !important; /* Делаем кнопки всегда видимыми */
+}
