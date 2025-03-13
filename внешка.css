@@ -6,6 +6,92 @@ body {
     padding: 20px;
 }
 
+styleEl.textContent = `
+        .gallery-item {
+            position: relative;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 10px;
+            padding: 10px;
+            width: 240px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
+            background-color: white;
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .item-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .gallery-item:hover .item-actions {
+            opacity: 1;
+        }
+        
+        .item-actions button {
+            width: 30px;
+            height: 30px;
+            margin-left: 5px;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .edit-btn {
+            background-color: #2196F3;
+        }
+        
+        .delete-btn {
+            background-color: #f44336;
+        }
+        
+        .item-image {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .item-title {
+            font-weight: bold;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        
+        .item-content {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #666;
+            max-height: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .no-items {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+        }
+    `;
+}
+
 /* Стили для кнопок JSON */
 .json-btn {
     padding: 8px 16px;
