@@ -25,6 +25,16 @@ document.addEventListener('DOMContentLoaded', function() {
     loadInitialData();
 });
 
+// Добавьте эту функцию для применения стилей к элементам галереи
+function applyGalleryStyles() {
+    // Создаем элемент <style>
+    let styleEl = document.getElementById('galleryCustomStyles');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'galleryCustomStyles';
+        document.head.appendChild(styleEl);
+    }
+
 // Функция для проверки наличия токена
 function checkGitHubToken() {
     const token = localStorage.getItem('githubToken');
@@ -317,6 +327,8 @@ async function loadInitialData() {
 
 // Инициализация кнопок
 function initButtons() {
+    // Применяем стили
+    applyGalleryStyles();
     console.log("Инициализация кнопок...");
     
     // Кнопка добавления
@@ -783,6 +795,72 @@ function renderGallery() {
     if (!gallery) {
         console.error("Элемент gallery не найден");
         return;
+        displayItems.forEach(item => {
+        console.log("Создание элемента:", item);
+        
+        const itemElement = document.createElement('div');
+        itemElement.className = 'gallery-item';
+        itemElement.dataset.id = item.id;
+        
+        // Создаем структуру элемента
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'item-actions';
+        
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit-btn';
+        editBtn.title = 'Редактировать';
+        editBtn.textContent = '✎';
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.title = 'Удалить';
+        deleteBtn.textContent = '×';
+        
+        const itemImg = document.createElement('img');
+        itemImg.className = 'item-image';
+        itemImg.src = item.imageUrl;
+        itemImg.alt = item.title;
+        
+        const itemTitle = document.createElement('div');
+        itemTitle.className = 'item-title';
+        itemTitle.textContent = item.title;
+        
+        const itemContent = document.createElement('div');
+        itemContent.className = 'item-content';
+        itemContent.textContent = item.content || '';
+        
+        // Собираем элемент
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(deleteBtn);
+        itemElement.appendChild(actionsDiv);
+        itemElement.appendChild(itemImg);
+        itemElement.appendChild(itemTitle);
+        itemElement.appendChild(itemContent);
+        
+        gallery.appendChild(itemElement);
+        
+        // Добавляем обработчики событий
+        editBtn.onclick = function(e) {
+            e.stopPropagation();
+            editItem(item.id);
+        };
+        
+        deleteBtn.onclick = function(e) {
+            e.stopPropagation();
+            showDeleteConfirmation(item.id);
+        };
+        
+        itemImg.onclick = function() {
+            openItemPage(item.id);
+        };
+        
+        itemTitle.onclick = function() {
+            openItemPage(item.id);
+        };
+    });
+    
+    console.log("Галерея обновлена");
+}
     }
     
     // Очищаем галерею
