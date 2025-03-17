@@ -125,3 +125,19 @@ body {
         font-size: 0.75rem;
     }
 }
+
+.filter-container {
+    position: relative;
+}
+
+.filter-options {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1000;
+    min-width: 200px;
+    margin-top: 5px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.25rem;
+    background-color: white;
+}
