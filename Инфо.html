@@ -100,17 +100,6 @@
         let items = JSON.parse(localStorage.getItem('galleryItems')) || [];
         const item = items.find(item => item.id === itemId);
 
-        // Форматирование даты
-        function formatDate(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('ru-RU', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        }
-
         // Функция для преобразования простого текста в параграфы
         function formatContent(content) {
             if (!content) return '<p>Нет описания для этого элемента.</p>';
@@ -133,13 +122,6 @@
                 
                 <div class="p-4 p-md-5">
                     <h1 class="display-5 fw-bold mb-4">${item.title}</h1>
-                    
-                    <div class="d-flex flex-column flex-md-row gap-3 text-secondary mb-4">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="far fa-calendar-alt"></i>
-                            <span>${dateCreated}</span>
-                        </div>
-                    </div>
                     
                     <hr class="my-4">
                     
