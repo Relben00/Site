@@ -36,10 +36,7 @@ function checkGitHubToken() {
         if (!tokenStatus) {
             tokenStatus = document.createElement('div');
             tokenStatus.id = 'tokenStatus';
-            tokenStatus.style.marginLeft = '10px';
-            tokenStatus.style.display = 'inline-block';
-            tokenStatus.style.padding = '5px 10px';
-            tokenStatus.style.borderRadius = '3px';
+            tokenStatus.className = 'ms-2 badge';
             tokenStatus.style.cursor = 'pointer';
             
             header.appendChild(tokenStatus);
@@ -47,12 +44,10 @@ function checkGitHubToken() {
         
         if (token) {
             tokenStatus.textContent = 'GitHub: Подключен';
-            tokenStatus.style.backgroundColor = '#4CAF50';
-            tokenStatus.style.color = 'white';
+            tokenStatus.className = 'ms-2 badge bg-success';
         } else {
             tokenStatus.textContent = 'GitHub: Не подключен';
-            tokenStatus.style.backgroundColor = '#f44336';
-            tokenStatus.style.color = 'white';
+            tokenStatus.className = 'ms-2 badge bg-danger';
         }
         
         // При клике на статус показываем форму для ввода токена
@@ -72,119 +67,59 @@ function showTokenInputForm() {
         document.body.removeChild(existingModal);
     }
     
-    // Создаем модальное окно для ввода токена
-    const tokenModal = document.createElement('div');
-    tokenModal.className = 'modal';
-    tokenModal.id = 'tokenModal';
-    tokenModal.style.display = 'block';
-    tokenModal.style.position = 'fixed';
-    tokenModal.style.zIndex = '1000';
-    tokenModal.style.left = '0';
-    tokenModal.style.top = '0';
-    tokenModal.style.width = '100%';
-    tokenModal.style.height = '100%';
-    tokenModal.style.overflow = 'auto';
-    tokenModal.style.backgroundColor = 'rgba(0,0,0,0.4)';
+    // Создаем модальное окно для Bootstrap
+    const tokenModalHTML = `
+    <div class="modal fade" id="tokenModal" tabindex="-1" aria-labelledby="tokenModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tokenModalLabel">Настройка GitHub токена</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Введите ваш персональный токен GitHub для работы с репозиторием. 
+                    Токен будет сохранен только в вашем браузере и не будет отправлен на сервер.</p>
+                    
+                    <div class="mb-3">
+                        <input type="password" class="form-control" id="githubTokenInput" 
+                        placeholder="Введите GitHub токен" value="${localStorage.getItem('githubToken') || ''}">
+                    </div>
+                    
+                    <p class="text-muted small">Для создания токена перейдите в 
+                    <a href="https://github.com/settings/tokens" target="_blank">настройки GitHub</a> 
+                    и выберите "Generate new token". Выберите разрешение "repo".</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-danger" id="clearTokenBtn">Удалить токен</button>
+                    <button type="button" class="btn btn-success" id="saveTokenBtn">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>`;
     
-    // Создаем содержимое модального окна
-    const modalContent = document.createElement('div');
-    modalContent.className = 'modal-content';
-    modalContent.style.backgroundColor = '#fefefe';
-    modalContent.style.margin = '15% auto';
-    modalContent.style.padding = '20px';
-    modalContent.style.border = '1px solid #888';
-    modalContent.style.maxWidth = '500px';
-    modalContent.style.borderRadius = '5px';
+    // Добавляем модальное окно в body
+    document.body.insertAdjacentHTML('beforeend', tokenModalHTML);
     
-    // Заголовок
-    const modalHeader = document.createElement('h2');
-    modalHeader.textContent = 'Настройка GitHub токена';
+    // Получаем элемент модального окна
+    const tokenModalEl = document.getElementById('tokenModal');
     
-    // Описание
-    const modalDescription = document.createElement('p');
-    modalDescription.textContent = 'Введите ваш персональный токен GitHub для работы с репозиторием. ' +
-        'Токен будет сохранен только в вашем браузере и не будет отправлен на сервер.';
+    // Инициализируем модальное окно Bootstrap
+    const tokenModal = new bootstrap.Modal(tokenModalEl);
     
-    // Поле ввода
-    const tokenInput = document.createElement('input');
-    tokenInput.type = 'password';
-    tokenInput.id = 'githubTokenInput';
-    tokenInput.placeholder = 'Введите GitHub токен';
-    tokenInput.style.width = '100%';
-    tokenInput.style.padding = '8px';
-    tokenInput.style.marginBottom = '15px';
-    tokenInput.style.boxSizing = 'border-box';
-    tokenInput.value = localStorage.getItem('githubToken') || '';
+    // Показываем модальное окно
+    tokenModal.show();
     
-    // Инструкция по получению токена
-    const tokenInstruction = document.createElement('p');
-    tokenInstruction.innerHTML = 'Для создания токена перейдите в <a href="https://github.com/settings/tokens" target="_blank">настройки GitHub</a> и выберите "Generate new token". Выберите разрешение "repo".';
-    tokenInstruction.style.fontSize = '0.9em';
-    tokenInstruction.style.color = '#666';
-    
-    // Кнопки
-    const buttonContainer = document.createElement('div');
-    buttonContainer.style.display = 'flex';
-    buttonContainer.style.justifyContent = 'space-between';
-    buttonContainer.style.marginTop = '20px';
-    
-    const cancelButton = document.createElement('button');
-    cancelButton.textContent = 'Отмена';
-    cancelButton.style.padding = '8px 16px';
-    cancelButton.style.backgroundColor = '#9e9e9e';
-    cancelButton.style.color = 'white';
-    cancelButton.style.border = 'none';
-    cancelButton.style.borderRadius = '4px';
-    cancelButton.style.cursor = 'pointer';
-    
-    const clearButton = document.createElement('button');
-    clearButton.textContent = 'Удалить токен';
-    clearButton.style.padding = '8px 16px';
-    clearButton.style.backgroundColor = '#f44336';
-    clearButton.style.color = 'white';
-    clearButton.style.border = 'none';
-    clearButton.style.borderRadius = '4px';
-    clearButton.style.cursor = 'pointer';
-    
-    const saveButton = document.createElement('button');
-    saveButton.textContent = 'Сохранить';
-    saveButton.style.padding = '8px 16px';
-    saveButton.style.backgroundColor = '#4CAF50';
-    saveButton.style.color = 'white';
-    saveButton.style.border = 'none';
-    saveButton.style.borderRadius = '4px';
-    saveButton.style.cursor = 'pointer';
-    
-    // Добавляем все элементы в модальное окно
-    buttonContainer.appendChild(cancelButton);
-    buttonContainer.appendChild(clearButton);
-    buttonContainer.appendChild(saveButton);
-    
-    modalContent.appendChild(modalHeader);
-    modalContent.appendChild(modalDescription);
-    modalContent.appendChild(tokenInput);
-    modalContent.appendChild(tokenInstruction);
-    modalContent.appendChild(buttonContainer);
-    
-    tokenModal.appendChild(modalContent);
-    document.body.appendChild(tokenModal);
-    
-    // Фокус на поле ввода
-    tokenInput.focus();
-    
-    // Обработчики событий
-    cancelButton.onclick = function() {
-        document.body.removeChild(tokenModal);
-    };
-    
-    clearButton.onclick = function() {
+    // Добавляем обработчики событий
+    document.getElementById('clearTokenBtn').onclick = function() {
         localStorage.removeItem('githubToken');
-        document.body.removeChild(tokenModal);
+        tokenModal.hide();
         updateTokenStatus(false);
         showNotification("GitHub токен удален", "info");
     };
     
-    saveButton.onclick = function() {
+    document.getElementById('saveTokenBtn').onclick = function() {
+        const tokenInput = document.getElementById('githubTokenInput');
         const token = tokenInput.value.trim();
         
         if (token) {
@@ -197,7 +132,7 @@ function showTokenInputForm() {
                 
                 if (valid) {
                     localStorage.setItem('githubToken', token);
-                    document.body.removeChild(tokenModal);
+                    tokenModal.hide();
                     updateTokenStatus(true);
                     showNotification("GitHub токен сохранен и действителен", "success");
                 } else {
@@ -210,19 +145,12 @@ function showTokenInputForm() {
         }
     };
     
-    // Закрытие модального окна при клике вне его
-    tokenModal.onclick = function(event) {
-        if (event.target === tokenModal) {
-            document.body.removeChild(tokenModal);
-        }
-    };
-    
     // Обработка нажатия Enter
-    tokenInput.onkeydown = function(e) {
+    document.getElementById('githubTokenInput').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
-            saveButton.click();
+            document.getElementById('saveTokenBtn').click();
         }
-    };
+    });
 }
 
 // Функция для обновления статуса токена
@@ -231,10 +159,10 @@ function updateTokenStatus(isConnected) {
     if (tokenStatus) {
         if (isConnected) {
             tokenStatus.textContent = 'GitHub: Подключен';
-            tokenStatus.style.backgroundColor = '#4CAF50';
+            tokenStatus.className = 'ms-2 badge bg-success';
         } else {
             tokenStatus.textContent = 'GitHub: Не подключен';
-            tokenStatus.style.backgroundColor = '#f44336';
+            tokenStatus.className = 'ms-2 badge bg-danger';
         }
     }
 }
@@ -333,8 +261,9 @@ function initButtons() {
             // Меняем заголовок
             document.getElementById('modalTitle').textContent = 'Добавить новый элемент';
             
-            // Показываем модальное окно
-            document.getElementById('itemModal').style.display = 'block';
+            // Показываем модальное окно через Bootstrap API
+            const itemModal = new bootstrap.Modal(document.getElementById('itemModal'));
+            itemModal.show();
         };
     } else {
         console.error("Кнопка добавления не найдена");
@@ -350,10 +279,12 @@ function initButtons() {
             
             if (isSorted) {
                 sortButton.textContent = 'Отменить сортировку';
-                sortButton.style.backgroundColor = '#ff9800';
+                sortButton.classList.remove('btn-primary');
+                sortButton.classList.add('btn-warning');
             } else {
                 sortButton.textContent = 'Сортировка';
-                sortButton.style.backgroundColor = '#2196F3';
+                sortButton.classList.remove('btn-warning');
+                sortButton.classList.add('btn-primary');
             }
             
             renderGallery();
@@ -361,43 +292,6 @@ function initButtons() {
     } else {
         console.error("Кнопка сортировки не найдена");
     }
-    
-    // Кнопка фильтра
-    const filterButton = document.getElementById('filterButton');
-    const filterOptions = document.getElementById('filterOptions');
-    
-    if (filterButton && filterOptions) {
-        filterButton.onclick = function() {
-            console.log("Нажата кнопка фильтра");
-            
-            filterOptions.style.display = filterOptions.style.display === 'block' ? 'none' : 'block';
-        };
-    } else {
-        console.error("Кнопка фильтра или опции не найдены");
-    }
-    
-    // Опции фильтра
-    document.querySelectorAll('.filter-option').forEach(option => {
-        option.onclick = function() {
-            currentFilter = this.dataset.filter;
-            console.log("Выбран фильтр:", currentFilter);
-            
-            document.querySelectorAll('.filter-option').forEach(opt => {
-                opt.classList.remove('active-filter');
-            });
-            this.classList.add('active-filter');
-            
-            if (filterButton) {
-                filterButton.textContent = 'Фильтр: ' + this.textContent;
-            }
-            
-            if (filterOptions) {
-                filterOptions.style.display = 'none';
-            }
-            
-            renderGallery();
-        };
-    });
     
     // Поле поиска
     const searchBox = document.getElementById('searchBox');
@@ -409,6 +303,28 @@ function initButtons() {
     } else {
         console.error("Поле поиска не найдено");
     }
+    
+    // Обработчики для опций фильтра
+    document.querySelectorAll('.dropdown-item').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            currentFilter = this.dataset.filter;
+            console.log("Выбран фильтр:", currentFilter);
+            
+            document.querySelectorAll('.dropdown-item').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            const filterButton = document.getElementById('filterButton');
+            if (filterButton) {
+                filterButton.textContent = 'Фильтр: ' + this.textContent;
+            }
+            
+            renderGallery();
+        });
+    });
     
     // Кнопка сохранения элемента
     const saveItem = document.getElementById('saveItem');
@@ -422,7 +338,7 @@ function initButtons() {
             const content = document.getElementById('itemContent').value;
             
             if (!title || !imageUrl) {
-                alert('Пожалуйста, заполните все обязательные поля');
+                showNotification('Пожалуйста, заполните все обязательные поля', 'error');
                 return;
             }
             
@@ -446,7 +362,9 @@ function initButtons() {
             localStorage.setItem('galleryItems', JSON.stringify(items));
             
             // Закрываем модальное окно
-            document.getElementById('itemModal').style.display = 'none';
+            const modalEl = document.getElementById('itemModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
             
             // Обновляем галерею
             renderGallery();
@@ -473,33 +391,22 @@ function initButtons() {
         console.error("Кнопка сохранения элемента не найдена");
     }
     
-    // Кнопки закрытия модальных окон
-    const closeModal = document.getElementById('closeModal');
-    const itemModal = document.getElementById('itemModal');
-    if (closeModal && itemModal) {
-        closeModal.onclick = function() {
-            itemModal.style.display = 'none';
-        };
-    }
+    // Кнопки отмены модальных окон
+    document.getElementById('cancelItem')?.addEventListener('click', function() {
+        const modalEl = document.getElementById('itemModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    });
     
-    const closeDeleteModal = document.getElementById('closeDeleteModal');
-    const deleteModal = document.getElementById('deleteModal');
-    if (closeDeleteModal && deleteModal) {
-        closeDeleteModal.onclick = function() {
-            deleteModal.style.display = 'none';
-        };
-    }
-    
-    const cancelDelete = document.getElementById('cancelDelete');
-    if (cancelDelete && deleteModal) {
-        cancelDelete.onclick = function() {
-            deleteModal.style.display = 'none';
-        };
-    }
+    document.getElementById('cancelDelete')?.addEventListener('click', function() {
+        const modalEl = document.getElementById('deleteModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    });
     
     // Кнопка подтверждения удаления
     const confirmDelete = document.getElementById('confirmDelete');
-    if (confirmDelete && deleteModal) {
+    if (confirmDelete) {
         confirmDelete.onclick = function() {
             console.log("Подтверждение удаления");
             
@@ -513,7 +420,9 @@ function initButtons() {
             localStorage.setItem('galleryItems', JSON.stringify(items));
             
             // Закрываем модальное окно
-            deleteModal.style.display = 'none';
+            const modalEl = document.getElementById('deleteModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
             
             // Обновляем галерею
             renderGallery();
@@ -610,16 +519,6 @@ function initButtons() {
     } else {
         console.error("Кнопка загрузки из JSON не найдена");
     }
-    
-    // Закрытие модальных окон при клике вне их
-    window.onclick = function(event) {
-        if (itemModal && event.target === itemModal) {
-            itemModal.style.display = 'none';
-        }
-        if (deleteModal && event.target === deleteModal) {
-            deleteModal.style.display = 'none';
-        }
-    };
 }
 
 // Функция для загрузки данных из GitHub с использованием токена
@@ -736,7 +635,7 @@ async function saveToGitHub(data, token) {
     }
 }
 
-// Функция для отображения галереи с гарантированными кнопками
+// Функция для отображения галереи
 function renderGallery() {
     console.log("Отображение галереи...");
     
@@ -751,7 +650,7 @@ function renderGallery() {
     
     // Если нет элементов
     if (!items || items.length === 0) {
-        gallery.innerHTML = '<div class="no-items">Нет элементов для отображения</div>';
+        gallery.innerHTML = '<div class="col-12 text-center p-5 bg-white rounded shadow-sm">Нет элементов для отображения</div>';
         return;
     }
     
@@ -780,86 +679,47 @@ function renderGallery() {
     
     // Если нет элементов после фильтрации
     if (displayItems.length === 0) {
-        gallery.innerHTML = '<div class="no-items">Нет элементов для отображения</div>';
+        gallery.innerHTML = '<div class="col-12 text-center p-5 bg-white rounded shadow-sm">Нет элементов для отображения</div>';
         return;
     }
     
     // Отображаем элементы
     displayItems.forEach(item => {
-        // Создаем контейнер элемента
+        const colDiv = document.createElement('div');
+        colDiv.className = 'col';
+        
         const itemElement = document.createElement('div');
-        itemElement.className = 'gallery-item';
+        itemElement.className = 'card h-100 position-relative';
         itemElement.dataset.id = item.id;
-        itemElement.style.position = 'relative'; // Гарантируем относительное позиционирование
         
-        // Создаем контейнер для кнопок
         const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'item-actions';
-        actionsDiv.style.position = 'absolute';
-        actionsDiv.style.top = '10px';
-        actionsDiv.style.right = '10px';
-        actionsDiv.style.display = 'flex';
-        actionsDiv.style.gap = '5px';
-        actionsDiv.style.zIndex = '10';
+        actionsDiv.className = 'position-absolute top-0 end-0 p-2 d-flex gap-2 item-actions';
         
-        // Создаем кнопку редактирования
         const editBtn = document.createElement('button');
-        editBtn.className = 'edit-btn';
-        editBtn.innerText = '✎';
+        editBtn.className = 'btn btn-primary btn-sm rounded-circle';
+        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
         editBtn.title = 'Редактировать';
-        editBtn.style.width = '30px';
-        editBtn.style.height = '30px';
-        editBtn.style.borderRadius = '50%';
-        editBtn.style.border = 'none';
-        editBtn.style.backgroundColor = '#2196F3';
-        editBtn.style.color = 'white';
-        editBtn.style.cursor = 'pointer';
-        editBtn.style.display = 'flex';
-        editBtn.style.alignItems = 'center';
-        editBtn.style.justifyContent = 'center';
         
-        // Создаем кнопку удаления
         const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-btn';
-        deleteBtn.innerText = '×';
+        deleteBtn.className = 'btn btn-danger btn-sm rounded-circle';
+        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
         deleteBtn.title = 'Удалить';
-        deleteBtn.style.width = '30px';
-        deleteBtn.style.height = '30px';
-        deleteBtn.style.borderRadius = '50%';
-        deleteBtn.style.border = 'none';
-        deleteBtn.style.backgroundColor = '#f44336';
-        deleteBtn.style.color = 'white';
-        deleteBtn.style.cursor = 'pointer';
-        deleteBtn.style.display = 'flex';
-        deleteBtn.style.alignItems = 'center';
-        deleteBtn.style.justifyContent = 'center';
         
-        // Создаем изображение
         const itemImg = document.createElement('img');
-        itemImg.className = 'item-image';
+        itemImg.className = 'card-img-top item-image';
         itemImg.src = item.imageUrl;
         itemImg.alt = item.title;
-        itemImg.style.width = '100%';
-        itemImg.style.height = '160px';
-        itemImg.style.objectFit = 'cover';
-        itemImg.style.borderRadius = '3px';
-        itemImg.style.cursor = 'pointer';
         
-        // Создаем заголовок
-        const itemTitle = document.createElement('div');
-        itemTitle.className = 'item-title';
+        const cardBody = document.createElement('div');
+        cardBody.className = 'card-body';
+        
+        const itemTitle = document.createElement('h5');
+        itemTitle.className = 'card-title';
         itemTitle.textContent = item.title;
-        itemTitle.style.fontWeight = 'bold';
-        itemTitle.style.marginTop = '10px';
-        itemTitle.style.cursor = 'pointer';
         
-        // Создаем содержимое
-        const itemContent = document.createElement('div');
-        itemContent.className = 'item-content';
+        const itemContent = document.createElement('p');
+        itemContent.className = 'card-text item-content';
         itemContent.textContent = item.content || '';
-        itemContent.style.marginTop = '5px';
-        itemContent.style.fontSize = '14px';
-        itemContent.style.color = '#666';
         
         // Добавляем обработчики событий
         editBtn.onclick = function(e) {
@@ -884,13 +744,15 @@ function renderGallery() {
         actionsDiv.appendChild(editBtn);
         actionsDiv.appendChild(deleteBtn);
         
+        cardBody.appendChild(itemTitle);
+        cardBody.appendChild(itemContent);
+        
         itemElement.appendChild(actionsDiv);
         itemElement.appendChild(itemImg);
-        itemElement.appendChild(itemTitle);
-        itemElement.appendChild(itemContent);
+        itemElement.appendChild(cardBody);
         
-        // Добавляем элемент в галерею
-        gallery.appendChild(itemElement);
+        colDiv.appendChild(itemElement);
+        gallery.appendChild(colDiv);
     });
     
     console.log("Галерея обновлена, элементов:", displayItems.length);
@@ -916,7 +778,8 @@ function editItem(id) {
     document.getElementById('modalTitle').textContent = 'Редактировать элемент';
     
     // Показываем модальное окно
-    document.getElementById('itemModal').style.display = 'block';
+    const itemModal = new bootstrap.Modal(document.getElementById('itemModal'));
+    itemModal.show();
 }
 
 // Функция для отображения подтверждения удаления
@@ -924,7 +787,10 @@ function showDeleteConfirmation(id) {
     console.log("Подтверждение удаления для ID:", id);
     
     document.getElementById('deleteItemId').value = id;
-    document.getElementById('deleteModal').style.display = 'block';
+    
+    // Показываем модальное окно подтверждения
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
 }
 
 // Функция для открытия страницы элемента
@@ -989,21 +855,13 @@ function showLoadingIndicator(message) {
     if (!loadingIndicator) {
         loadingIndicator = document.createElement('div');
         loadingIndicator.id = 'loadingIndicator';
-        loadingIndicator.className = 'loading-indicator';
-        loadingIndicator.style.position = 'fixed';
-        loadingIndicator.style.top = '0';
-        loadingIndicator.style.left = '0';
-        loadingIndicator.style.width = '100%';
-        loadingIndicator.style.backgroundColor = '#2196F3';
-        loadingIndicator.style.color = 'white';
-        loadingIndicator.style.padding = '10px';
-        loadingIndicator.style.textAlign = 'center';
+        loadingIndicator.className = 'position-fixed top-0 start-0 w-100 bg-primary text-white text-center py-3';
         loadingIndicator.style.zIndex = '9999';
         document.body.appendChild(loadingIndicator);
     }
     
-    loadingIndicator.textContent = message || 'Загрузка...';
-    loadingIndicator.style.display = 'block';
+    loadingIndicator.innerHTML = `<i class="fas fa-circle-notch fa-spin me-2"></i> ${message || 'Загрузка...'}`;
+    loadingIndicator.classList.remove('d-none');
 }
 
 // Функция для скрытия индикатора загрузки
@@ -1012,49 +870,61 @@ function hideLoadingIndicator() {
     
     const loadingIndicator = document.getElementById('loadingIndicator');
     if (loadingIndicator) {
-        loadingIndicator.style.display = 'none';
+        loadingIndicator.classList.add('d-none');
     }
 }
 
 // Функция для отображения уведомления
-function showNotification(message, type) {
+function showNotification(message, type = 'info') {
     console.log("Показ уведомления:", message, type);
     
-    const notification = document.createElement('div');
-    notification.className = 'notification ' + (type || 'info');
-    notification.textContent = message;
+    // Преобразуем тип error в danger (для соответствия Bootstrap)
+    const bsType = type === 'error' ? 'danger' : type;
     
-    notification.style.position = 'fixed';
-    notification.style.bottom = '20px';
-    notification.style.right = '20px';
-    notification.style.padding = '12px 20px';
-    notification.style.borderRadius = '4px';
-    notification.style.color = 'white';
-    notification.style.zIndex = '9999';
-    notification.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
-    
-    // Цвет в зависимости от типа
-    if (type === 'success') {
-        notification.style.backgroundColor = '#4CAF50';
-    } else if (type === 'error') {
-        notification.style.backgroundColor = '#f44336';
-    } else if (type === 'warning') {
-        notification.style.backgroundColor = '#ff9800';
-    } else {
-        notification.style.backgroundColor = '#2196F3';
+    // Проверяем/создаем контейнер для уведомлений
+    let notificationsContainer = document.getElementById('notifications');
+    if (!notificationsContainer) {
+        notificationsContainer = document.createElement('div');
+        notificationsContainer.id = 'notifications';
+        notificationsContainer.className = 'position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(notificationsContainer);
     }
     
-    document.body.appendChild(notification);
+    // Создаем элемент toast
+    const toastId = 'toast-' + Date.now();
+    const toastEl = document.createElement('div');
+    toastEl.id = toastId;
+    toastEl.className = `toast align-items-center text-white bg-${bsType} border-0`;
+    toastEl.role = 'alert';
+    toastEl.setAttribute('aria-live', 'assertive');
+    toastEl.setAttribute('aria-atomic', 'true');
     
-    // Удаляем через 3 секунды
-    setTimeout(function() {
-        notification.style.opacity = '0';
-        notification.style.transition = 'opacity 0.5s';
-        
-        setTimeout(function() {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 500);
-    }, 3000);
+    // Добавляем содержимое toast
+    toastEl.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    
+    // Добавляем toast в контейнер
+    notificationsContainer.appendChild(toastEl);
+    
+    // Инициализируем toast через Bootstrap API
+    const toastInstance = new bootstrap.Toast(toastEl, {
+        autohide: true,
+        delay: 3000
+    });
+    
+    // Показываем toast
+    toastInstance.show();
+    
+    // Удаляем элемент после скрытия
+    toastEl.addEventListener('hidden.bs.toast', function() {
+        if (toastEl.parentNode) {
+            toastEl.parentNode.removeChild(toastEl);
+        }
+    });
 }
