@@ -10,36 +10,29 @@ body {
     background-color: #f7f9fc;
 }
 
-/* Дополнительные стили для галереи и карточек */
-.gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 25px;
-    margin-top: 25px;
-}
-
-.gallery-item {
-    position: relative;
+/* Дополнительные стили для карточек */
+.card {
     transition: var(--transition);
     height: 100%;
 }
 
-.gallery-item:hover {
+.card:hover {
     transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
 }
 
-.item-image {
+.card-img-top {
     height: 180px;
     object-fit: cover;
     cursor: pointer;
     transition: transform 0.5s;
 }
 
-.gallery-item:hover .item-image {
+.card:hover .card-img-top {
     transform: scale(1.05);
 }
 
-.item-content {
+.card-text {
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -54,67 +47,8 @@ body {
     right: 12px;
     display: flex;
     gap: 8px;
-    z-index: 10;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.gallery-item:hover .item-actions {
-    opacity: 1;
-}
-
-.item-actions button {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
-}
-
-.item-actions button:hover {
-    transform: scale(1.1);
-}
-
-/* Уведомления */
-#notifications {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.notification {
-    animation: slide-in 0.3s ease-out;
-    min-width: 300px;
-}
-
-@keyframes slide-in {
-    from {
-        transform: translateY(100px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-/* Медиа-запросы */
-@media (max-width: 768px) {
-    .item-actions {
-        opacity: 1;
-    }
-}
-
-/* Стили для кнопок действий над элементами */
-.item-actions {
-    opacity: 1 !important; /* Всегда видимы */
     z-index: 100;
+    opacity: 1; /* Всегда видимы */
 }
 
 /* На маленьких экранах делаем кнопки меньше */
@@ -126,6 +60,11 @@ body {
     }
 }
 
+.item-actions button:hover {
+    transform: scale(1.1);
+}
+
+/* Стили для выпадающего меню фильтра */
 .filter-container {
     position: relative;
 }
@@ -140,4 +79,31 @@ body {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     border-radius: 0.25rem;
     background-color: white;
+}
+
+/* Уведомления */
+#notifications {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    animation: slide-in 0.3s ease-out;
+    min-width: 300px;
+}
+
+@keyframes slide-in {
+    from {
+        transform: translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
