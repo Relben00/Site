@@ -110,3 +110,18 @@ body {
         opacity: 1;
     }
 }
+
+/* Стили для кнопок действий над элементами */
+.item-actions {
+    opacity: 1 !important; /* Всегда видимы */
+    z-index: 100;
+}
+
+/* На маленьких экранах делаем кнопки меньше */
+@media (max-width: 768px) {
+    .item-actions .btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.75rem;
+    }
+}
