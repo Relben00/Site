@@ -24,12 +24,11 @@ document.addEventListener('DOMContentLoaded', function() {
     loadInitialData();
 });
 
-// Функция для проверки наличия токена
 function checkGitHubToken() {
     const token = localStorage.getItem('githubToken');
     
-    // Добавляем индикатор статуса токена
-    const header = document.querySelector('.header');
+    // Для Bootstrap-версии заголовка
+    const header = document.querySelector('.container .d-flex.justify-content-between');
     if (header) {
         let tokenStatus = document.getElementById('tokenStatus');
         
@@ -304,27 +303,42 @@ function initButtons() {
         console.error("Поле поиска не найдено");
     }
     
-    // Обработчики для опций фильтра
-    document.querySelectorAll('.dropdown-item').forEach(option => {
-        option.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            currentFilter = this.dataset.filter;
-            console.log("Выбран фильтр:", currentFilter);
-            
-            document.querySelectorAll('.dropdown-item').forEach(opt => {
-                opt.classList.remove('active');
-            });
-            this.classList.add('active');
-            
-            const filterButton = document.getElementById('filterButton');
-            if (filterButton) {
-                filterButton.textContent = 'Фильтр: ' + this.textContent;
-            }
-            
-            renderGallery();
-        });
+    // Кнопка фильтра
+const filterButton = document.getElementById('filterButton');
+const filterOptions = document.getElementById('filterOptions');
+
+if (filterButton && filterOptions) {
+    filterButton.onclick = function() {
+        console.log("Нажата кнопка фильтра");
+        filterOptions.classList.toggle('d-none');
+    };
+
+    // Закрываем при клике вне
+    document.addEventListener('click', function(event) {
+        if (!filterButton.contains(event.target) && !filterOptions.contains(event.target)) {
+            filterOptions.classList.add('d-none');
+        }
     });
+}
+
+// Опции фильтра
+document.querySelectorAll('.filter-options .list-group-item').forEach(option => {
+    option.onclick = function(e) {
+        e.preventDefault();
+        currentFilter = this.dataset.filter;
+        console.log("Выбран фильтр:", currentFilter);
+        
+        document.querySelectorAll('.filter-options .list-group-item').forEach(opt => {
+            opt.classList.remove('active');
+        });
+        this.classList.add('active');
+        
+        filterButton.textContent = 'Фильтр: ' + this.textContent;
+        filterOptions.classList.add('d-none');
+        
+        renderGallery();
+    };
+});
     
     // Кнопка сохранения элемента
     const saveItem = document.getElementById('saveItem');
