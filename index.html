@@ -24,17 +24,20 @@
                     <button class="btn btn-primary" id="sortButton">
                         <i class="fas fa-sort-amount-down"></i> Сортировка
                     </button>
-                    <div class="dropdown">
-                        <button class="btn btn-info dropdown-toggle" id="filterButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    <!-- Замените существующую структуру выпадающего меню на эту -->
+                    <div class="filter-container">
+                        <button class="btn btn-info" id="filterButton">
                             <i class="fas fa-filter"></i> Фильтр
                         </button>
-                        <ul class="dropdown-menu" id="filterOptions">
-                            <li><a class="dropdown-item active" href="#" data-filter="all">Все</a></li>
-                            <li><a class="dropdown-item" href="#" data-filter="symbol">Символы</a></li>
-                            <li><a class="dropdown-item" href="#" data-filter="english">Английские буквы</a></li>
-                            <li><a class="dropdown-item" href="#" data-filter="russian">Русские буквы</a></li>
-                            <li><a class="dropdown-item" href="#" data-filter="other">Другие</a></li>
-                        </ul>
+                        <div class="filter-options d-none" id="filterOptions">
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-action active" data-filter="all">Все</a>
+                                <a href="#" class="list-group-item list-group-item-action" data-filter="symbol">Символы</a>
+                                <a href="#" class="list-group-item list-group-item-action" data-filter="english">Английские буквы</a>
+                                <a href="#" class="list-group-item list-group-item-action" data-filter="russian">Русские буквы</a>
+                                <a href="#" class="list-group-item list-group-item-action" data-filter="other">Другие</a>
+                            </div>
+                        </div>
                     </div>
                     <button class="btn btn-success" id="addButton">
                         <i class="fas fa-plus"></i> Добавить элемент
