@@ -125,9 +125,6 @@
             document.title = item.title; // Устанавливаем заголовок страницы
             const container = document.getElementById('itemContainer');
             
-            // Предполагаем, что у объекта item есть поле createdAt или аналогичное
-            const dateCreated = item.createdAt ? formatDate(item.createdAt) : 'Дата не указана';
-            
             container.innerHTML = `
                 <div class="item-image-container">
                     <img src="${item.imageUrl || item.image}" alt="${item.title}" class="item-image">
@@ -141,10 +138,6 @@
                         <div class="d-flex align-items-center gap-2">
                             <i class="far fa-calendar-alt"></i>
                             <span>${dateCreated}</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="far fa-eye"></i>
-                            <span>Просмотров: ${Math.floor(Math.random() * 100) + 1}</span>
                         </div>
                     </div>
                     
