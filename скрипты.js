@@ -27,33 +27,27 @@ document.addEventListener('DOMContentLoaded', function() {
 function checkGitHubToken() {
     const token = localStorage.getItem('githubToken');
     
-    // Для Bootstrap-версии заголовка
-    const header = document.querySelector('.container .d-flex.justify-content-between');
-    if (header) {
-        let tokenStatus = document.getElementById('tokenStatus');
-        
-        if (!tokenStatus) {
-            tokenStatus = document.createElement('div');
-            tokenStatus.id = 'tokenStatus';
-            tokenStatus.className = 'ms-2 badge';
-            tokenStatus.style.cursor = 'pointer';
-            
-            header.appendChild(tokenStatus);
-        }
-        
-        if (token) {
-            tokenStatus.textContent = 'GitHub: Подключен';
-            tokenStatus.className = 'ms-2 badge bg-success';
-        } else {
-            tokenStatus.textContent = 'GitHub: Не подключен';
-            tokenStatus.className = 'ms-2 badge bg-danger';
-        }
-        
-        // При клике на статус показываем форму для ввода токена
-        tokenStatus.onclick = function() {
-            showTokenInputForm();
-        };
+    // Находим элемент статуса
+    let tokenStatus = document.getElementById('tokenStatus');
+    
+    if (!tokenStatus) {
+        console.error("Элемент статуса GitHub не найден");
+        return !!token;
     }
+    
+    // Обновляем статус
+    if (token) {
+        tokenStatus.textContent = 'GitHub: Подключен';
+        tokenStatus.className = 'ms-2 badge bg-success';
+    } else {
+        tokenStatus.textContent = 'GitHub: Не подключен';
+        tokenStatus.className = 'ms-2 badge bg-danger';
+    }
+    
+    // При клике на статус показываем форму для ввода токена
+    tokenStatus.onclick = function() {
+        showTokenInputForm();
+    };
     
     return !!token;
 }
@@ -303,42 +297,50 @@ function initButtons() {
         console.error("Поле поиска не найдено");
     }
     
-    // Кнопка фильтра
+    // Кнопка фильтра и его опции
 const filterButton = document.getElementById('filterButton');
 const filterOptions = document.getElementById('filterOptions');
 
 if (filterButton && filterOptions) {
-    filterButton.onclick = function() {
-        console.log("Нажата кнопка фильтра");
+    // Показать/скрыть выпадающее меню при клике на кнопку
+    filterButton.addEventListener('click', function(e) {
+        e.stopPropagation();
         filterOptions.classList.toggle('d-none');
-    };
-
-    // Закрываем при клике вне
+    });
+    
+    // Закрыть меню при клике вне
     document.addEventListener('click', function(event) {
         if (!filterButton.contains(event.target) && !filterOptions.contains(event.target)) {
             filterOptions.classList.add('d-none');
         }
     });
-}
-
-// Опции фильтра
-document.querySelectorAll('.filter-options .list-group-item').forEach(option => {
-    option.onclick = function(e) {
-        e.preventDefault();
-        currentFilter = this.dataset.filter;
-        console.log("Выбран фильтр:", currentFilter);
-        
-        document.querySelectorAll('.filter-options .list-group-item').forEach(opt => {
-            opt.classList.remove('active');
+    
+    // Обработчики для опций фильтра
+    document.querySelectorAll('#filterOptions .list-group-item').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Установить текущий фильтр
+            currentFilter = this.dataset.filter;
+            console.log("Выбран фильтр:", currentFilter);
+            
+            // Обновить активный элемент
+            document.querySelectorAll('#filterOptions .list-group-item').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // Обновить текст кнопки
+            filterButton.innerHTML = `<i class="fas fa-filter"></i> ${this.textContent}`;
+            
+            // Скрыть меню
+            filterOptions.classList.add('d-none');
+            
+            // Обновить галерею
+            renderGallery();
         });
-        this.classList.add('active');
-        
-        filterButton.textContent = 'Фильтр: ' + this.textContent;
-        filterOptions.classList.add('d-none');
-        
-        renderGallery();
-    };
-});
+    });
+}
     
     // Кнопка сохранения элемента
     const saveItem = document.getElementById('saveItem');
