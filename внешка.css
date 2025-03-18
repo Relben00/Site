@@ -90,23 +90,23 @@ body {
     box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
 }
 
-/* Настраиваем сетку для 5 элементов в строку на больших экранах */
+/* Настраиваем 5 элементов в строку на больших экранах */
 @media (min-width: 1200px) {
-    .main-content .row .card-container {
-        flex: 0 0 20%;
-        max-width: 20%;
-        padding-right: 10px;
-        padding-left: 10px;
+    .main-content .row > [class*='col-'] {
+        flex: 0 0 20% !important;
+        max-width: 20% !important;
+        padding-right: 10px !important;
+        padding-left: 10px !important;
     }
 }
 
-/* Для средних экранов делаем 3-4 элемента в строку */
+/* 4 элемента для средних экранов */
 @media (min-width: 992px) and (max-width: 1199px) {
-    .main-content .row .card-container {
-        flex: 0 0 25%;
-        max-width: 25%;
-        padding-right: 10px;
-        padding-left: 10px;
+    .main-content .row > [class*='col-'] {
+        flex: 0 0 25% !important;
+        max-width: 25% !important;
+        padding-right: 10px !important;
+        padding-left: 10px !important;
     }
 }
 
