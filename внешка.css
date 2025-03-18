@@ -5,9 +5,34 @@
 
 /* Базовые стили, не перекрываемые Bootstrap */
 body {
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
     background-color: #f7f9fc;
+}
+
+/* Стили для боковой панели */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.main-content {
+    margin-left: 25%;
+}
+
+@media (max-width: 992px) {
+    .sidebar {
+        position: static;
+        height: auto;
+    }
+    .main-content {
+        margin-left: 0;
+    }
 }
 
 /* Дополнительные стили для карточек */
