@@ -1,11 +1,8 @@
 // Массив для хранения элементов
 let items = [];
 let currentFilter = 'all';
-let currentCategory = 'all';
+let currentCategory = 'all'; // Добавлена переменная для текущей категории
 let isSorted = false;
-
-// Массив доступных категорий
-const availableCategories = ['OF', 'Ph', 'Азиатки'];
 
 // GitHub API конфигурация без токена
 const githubConfig = {
@@ -27,17 +24,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Загрузка данных
     loadInitialData();
     
-    // Инициализация категорий
+    // Инициализация фильтрации по категориям
     initCategoryFilters();
 });
 
 // Инициализация фильтров по категориям
 function initCategoryFilters() {
     const categoryLinks = document.querySelectorAll('#categoryList a');
-    if (categoryLinks.length === 0) {
-        console.error("Элементы категорий не найдены");
-        return;
-    }
     
     categoryLinks.forEach(link => {
         link.addEventListener('click', function(e) {
@@ -287,10 +280,8 @@ function initButtons() {
             document.getElementById('itemImage').value = '';
             document.getElementById('itemContent').value = '';
             
-            // Подготавливаем категории
-            setTimeout(() => {
-                populateCategoriesContainer([]);
-            }, 100);
+            // Заполняем категории (новая функция)
+            populateCategoriesContainer([]);
             
             // Меняем заголовок
             document.getElementById('modalTitle').textContent = 'Добавить новый элемент';
@@ -312,11 +303,11 @@ function initButtons() {
             isSorted = !isSorted;
             
             if (isSorted) {
-                sortButton.innerHTML = '<i class="fas fa-sort-amount-down"></i> Отменить сортировку';
+                sortButton.textContent = 'Отменить сортировку';
                 sortButton.classList.remove('btn-primary');
                 sortButton.classList.add('btn-warning');
             } else {
-                sortButton.innerHTML = '<i class="fas fa-sort-amount-down"></i> Сортировка';
+                sortButton.textContent = 'Сортировка';
                 sortButton.classList.remove('btn-warning');
                 sortButton.classList.add('btn-primary');
             }
@@ -399,7 +390,7 @@ function initButtons() {
                 return;
             }
             
-            // Собираем выбранные категории
+            // Собираем выбранные категории (новый код)
             const categories = [];
             document.querySelectorAll('.category-checkbox:checked').forEach(checkbox => {
                 categories.push(checkbox.value);
@@ -407,12 +398,13 @@ function initButtons() {
             
             // Создаем новый элемент или обновляем существующий
             const newId = id || Date.now().toString();
+            // Добавляем categories в данные элемента
             const itemData = { 
                 id: newId, 
                 title, 
                 imageUrl, 
-                content,
-                categories: categories 
+                content, 
+                categories 
             };
             
             // Обновляем массив
@@ -461,42 +453,30 @@ function initButtons() {
     }
     
     // Кнопки отмены модальных окон
-    const cancelItem = document.getElementById('cancelItem');
-    if (cancelItem) {
-        cancelItem.addEventListener('click', function() {
-            const modalEl = document.getElementById('itemModal');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) modal.hide();
-        });
-    }
+    document.getElementById('cancelItem')?.addEventListener('click', function() {
+        const modalEl = document.getElementById('itemModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    });
     
-    const cancelDelete = document.getElementById('cancelDelete');
-    if (cancelDelete) {
-        cancelDelete.addEventListener('click', function() {
-            const modalEl = document.getElementById('deleteModal');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) modal.hide();
-        });
-    }
+    document.getElementById('cancelDelete')?.addEventListener('click', function() {
+        const modalEl = document.getElementById('deleteModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    });
     
     // Кнопки закрытия модальных окон
-    const closeModal = document.getElementById('closeModal');
-    if (closeModal) {
-        closeModal.addEventListener('click', function() {
-            const modalEl = document.getElementById('itemModal');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) modal.hide();
-        });
-    }
+    document.getElementById('closeModal')?.addEventListener('click', function() {
+        const modalEl = document.getElementById('itemModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    });
     
-    const closeDeleteModal = document.getElementById('closeDeleteModal');
-    if (closeDeleteModal) {
-        closeDeleteModal.addEventListener('click', function() {
-            const modalEl = document.getElementById('deleteModal');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) modal.hide();
-        });
-    }
+    document.getElementById('closeDeleteModal')?.addEventListener('click', function() {
+        const modalEl = document.getElementById('deleteModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    });
     
     // Кнопка подтверждения удаления
     const confirmDelete = document.getElementById('confirmDelete');
@@ -615,27 +595,18 @@ function initButtons() {
     }
 }
 
-// Функция для заполнения контейнера категорий
+// Функция для заполнения контейнера категорий (новая функция)
 function populateCategoriesContainer(selectedCategories = []) {
     const container = document.getElementById('categoriesContainer');
-    if (!container) {
-        console.error("Контейнер категорий не найден");
-        return;
-    }
+    if (!container) return;
     
-    console.log("Заполнение контейнера категорий:", selectedCategories);
-    
-    // Очищаем контейнер
     container.innerHTML = '';
     
-    // Проверяем, что selectedCategories является массивом
-    if (!Array.isArray(selectedCategories)) {
-        selectedCategories = [];
-    }
+    // Список доступных категорий
+    const availableCategories = ['OF', 'Ph', 'Азиатки'];
     
-    // Добавляем каждую категорию как чекбокс
     availableCategories.forEach(category => {
-        const isChecked = selectedCategories.includes(category);
+        const isChecked = Array.isArray(selectedCategories) && selectedCategories.includes(category);
         
         const div = document.createElement('div');
         div.className = 'd-inline-block me-3 mb-2';
@@ -809,7 +780,7 @@ function renderGallery() {
         displayItems = displayItems.filter(item => getCharType(item.title) === currentFilter);
     }
     
-    // Фильтрация по категории
+    // Фильтрация по категории (новый код)
     if (currentCategory !== 'all') {
         displayItems = displayItems.filter(item => 
             item.categories && 
@@ -866,7 +837,7 @@ function renderGallery() {
         itemContent.className = 'card-text item-content';
         itemContent.textContent = item.content || '';
         
-        // Добавляем категории, если они есть
+        // Добавляем категории, если они есть (новый код)
         if (item.categories && item.categories.length > 0) {
             const categoriesDiv = document.createElement('div');
             categoriesDiv.className = 'item-categories';
@@ -934,17 +905,15 @@ function editItem(id) {
     document.getElementById('itemImage').value = item.imageUrl;
     document.getElementById('itemContent').value = item.content || '';
     
+    // Заполняем категории (новый код)
+    populateCategoriesContainer(item.categories || []);
+    
     // Меняем заголовок
     document.getElementById('modalTitle').textContent = 'Редактировать элемент';
     
     // Показываем модальное окно
     const itemModal = new bootstrap.Modal(document.getElementById('itemModal'));
     itemModal.show();
-    
-    // Подготавливаем категории (с задержкой для уверенности, что модальное окно отрисовалось)
-    setTimeout(() => {
-        populateCategoriesContainer(item.categories || []);
-    }, 100);
 }
 
 // Функция для отображения подтверждения удаления
