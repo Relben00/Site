@@ -33,6 +33,7 @@ body {
     margin-left: 16.667%; /* Соответствует ширине sidebar */
     padding-left: 0px;
     padding-right: 0px;
+    overflow-x: hidden; /* Дополнительно скрываем скролл в контейнере контента */
 }
 
 /* Устранение отступов контейнера */
@@ -49,6 +50,7 @@ body {
     
     .main-content {
         margin-left: 220px;
+        overflow-x: hidden; /* Дополнительно скрываем скролл в контейнере контента */
     }
 }
 
@@ -61,6 +63,7 @@ body {
     
     .main-content {
         margin-left: 0;
+        overflow-x: hidden; /* Дополнительно скрываем скролл в контейнере контента */
     }
     
 }
