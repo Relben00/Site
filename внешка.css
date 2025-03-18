@@ -17,16 +17,21 @@ body {
     top: 0;
     left: 0;
     height: 100vh;
+    width: 16.667% !important; /* Соответствует col-lg-2 (16.667% от 12 колонок) */
     overflow-y: auto;
     z-index: 1000;
-    padding-left: 0 !important;
+    padding-left: 15px !important;
     padding-right: 15px !important;
-    margin-left: 0 !important;
     border-right: 1px solid #dee2e6;
+    background-color: white;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
+/* Отступ для основного контента */
 .main-content {
-    margin-left: 25%;
+    margin-left: 16.667%; /* Соответствует ширине sidebar */
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 /* Устранение отступов контейнера */
@@ -35,12 +40,28 @@ body {
     padding-right: 0 !important;
 }
 
+/* Для еще меньшей ширины на больших экранах */
+@media (min-width: 1200px) {
+    .sidebar {
+        width: 220px !important; /* Фиксированная ширина в пикселях */
+    }
+    
+    .main-content {
+        margin-left: 220px;
+    }
+}
+
 @media (max-width: 992px) {
     .sidebar {
         position: static;
         height: auto;
-        padding-left: 15px !important;
+        width: 100% !important;
     }
+    
+    .main-content {
+        margin-left: 0;
+    }
+}
 
 /* Устранение отступов в строках и столбцах */
 .row {
