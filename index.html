@@ -45,11 +45,11 @@
                 <!-- Категории -->
                 <div class="mb-4">
                     <h5 class="mb-3">Категории</h5>
-                    <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-action active">Все категории</a>
-                        <a href="#" class="list-group-item list-group-item-action">Onlyfans</a>
-                        <a href="#" class="list-group-item list-group-item-action">Pornhub</a>
-                        <a href="#" class="list-group-item list-group-item-action">Азиатки</a>
+                    <div class="list-group" id="categoryList">
+                        <a href="#" class="list-group-item list-group-item-action active" data-category="all">Все категории</a>
+                        <a href="#" class="list-group-item list-group-item-action" data-category="OF">OF</a>
+                        <a href="#" class="list-group-item list-group-item-action" data-category="Ph">Ph</a>
+                        <a href="#" class="list-group-item list-group-item-action" data-category="Азиатки">Азиатки</a>
                     </div>
                 </div>
                 
@@ -114,6 +114,12 @@
                         <div class="mb-3">
                             <label for="itemContent" class="form-label">Описание:</label>
                             <textarea class="form-control" id="itemContent" rows="5" placeholder="Введите описание элемента..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Категории:</label>
+                            <div class="categories-container" id="categoriesContainer">
+                                <!-- Категории будут добавлены динамически из JavaScript -->
+                            </div>
                         </div>
                     </form>
                 </div>
