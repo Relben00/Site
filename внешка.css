@@ -19,17 +19,39 @@ body {
     height: 100vh;
     overflow-y: auto;
     z-index: 1000;
+    padding-left: 0 !important;
+    padding-right: 15px !important;
+    margin-left: 0 !important;
+    border-right: 1px solid #dee2e6;
 }
 
 .main-content {
     margin-left: 25%;
 }
 
+/* Устранение отступов контейнера */
+.container-fluid {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
 @media (max-width: 992px) {
     .sidebar {
         position: static;
         height: auto;
+        padding-left: 15px !important;
     }
+
+/* Устранение отступов в строках и столбцах */
+.row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+.col-lg-3, .col-md-4 {
+    padding-left: 0 !important;
+}
+    
     .main-content {
         margin-left: 0;
     }
