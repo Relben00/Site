@@ -30,7 +30,7 @@ body {
 /* Отступ для основного контента */
 .main-content {
     margin-left: 16.667%; /* Соответствует ширине sidebar */
-    padding-left: 15px;
+    padding-left: 30px;
     padding-right: 15px;
 }
 
