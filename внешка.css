@@ -9,6 +9,7 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f7f9fc;
+    overflow-x: hidden;
 }
 
 /* Стили для боковой панели */
@@ -128,6 +129,11 @@ body {
 .main-content .row {
     margin-left: -10px !important;
     margin-right: -10px !important;
+}
+
+/* Уменьшаем отступы между карточками */
+.g-4 {
+    --bs-gutter-x: 1rem !important; /* Уменьшенный отступ между карточками */
 }
 
 .card-text {
