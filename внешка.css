@@ -90,15 +90,44 @@ body {
     box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
 }
 
+/* Настраиваем сетку для 5 элементов в строку на больших экранах */
+@media (min-width: 1200px) {
+    .main-content .row .card-container {
+        flex: 0 0 20%;
+        max-width: 20%;
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+}
+
+/* Для средних экранов делаем 3-4 элемента в строку */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .main-content .row .card-container {
+        flex: 0 0 25%;
+        max-width: 25%;
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+}
+
+/* Улучшаем отображение изображений */
 .card-img-top {
-    height: 180px;
-    object-fit: cover;
+    height: 200px;
+    object-fit: contain; /* Изменено с cover на contain, чтобы изображение было видно полностью */
+    background-color: #f8f9fa; /* Светлый фон для изображений */
+    width: 100%;
     cursor: pointer;
     transition: transform 0.5s;
 }
 
-.card:hover .card-img-top {
-    transform: scale(1.05);
+.card {
+    margin-bottom: 20px;
+}
+
+/* Обеспечиваем отображение всего контента */
+.main-content .row {
+    margin-left: -10px !important;
+    margin-right: -10px !important;
 }
 
 .card-text {
