@@ -46,9 +46,9 @@ body {
         width: 220px !important; /* Фиксированная ширина в пикселях */
     }
     
-    .main-content {
+   /* .main-content {
         margin-left: 220px;
-    }
+    }*/
 }
 
 @media (max-width: 992px) {
@@ -58,9 +58,9 @@ body {
         width: 100% !important;
     }
     
-    .main-content {
+   /* .main-content {
         margin-left: 16.667%;
-    }
+    }*/
 }
 
 /* Устранение отступов в строках и столбцах */
@@ -73,9 +73,9 @@ body {
     padding-left: 0 !important;
 }
     
-    .main-content {
+   /* .main-content {
         margin-left: 16.67%;
-    }
+    }*/
 }
 
 /* Дополнительные стили для карточек */
