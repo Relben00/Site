@@ -89,7 +89,6 @@ function renderGallery() {
 
     let filtered = [...items];
 
-    // поиск
     const search = document.getElementById('searchBox')
         ?.value.toLowerCase().trim();
 
@@ -99,14 +98,12 @@ function renderGallery() {
         );
     }
 
-    // категория
     if (currentCategory !== 'all') {
         filtered = filtered.filter(item =>
             item.categories?.includes(currentCategory)
         );
     }
 
-    // сортировка
     if (isSorted) {
         filtered.sort((a, b) =>
             a.title.localeCompare(b.title)
@@ -126,15 +123,31 @@ function renderGallery() {
 
         col.innerHTML = `
             <div class="card h-100">
-                <img src="${item.imageUrl}" class="card-img-top">
+                <img src="${item.imageUrl}" class="card-img-top" style="cursor:pointer;">
                 <div class="card-body">
-                    <h5>${item.title}</h5>
+                    <h5 style="cursor:pointer;">${item.title}</h5>
                     <small class="text-muted">
                         ${item.categories?.join(', ') || ''}
                     </small>
+                    <button class="btn btn-danger btn-sm mt-2 delete-btn">
+                        Удалить
+                    </button>
                 </div>
             </div>
         `;
+
+        // открыть страницу
+        col.querySelector('img').onclick = () => openItem(item.id);
+        col.querySelector('h5').onclick = () => openItem(item.id);
+
+        // удалить
+        col.querySelector('.delete-btn').onclick = () => {
+            if (confirm("Удалить элемент?")) {
+                items = items.filter(i => i.id !== item.id);
+                save();
+                renderGallery();
+            }
+        };
 
         gallery.appendChild(col);
     });
@@ -144,4 +157,9 @@ function renderGallery() {
 
 function save() {
     localStorage.setItem('galleryItems', JSON.stringify(items));
+}
+
+
+function openItem(id) {
+    window.location.href = `info.html?id=${id}`;
 }
