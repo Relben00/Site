@@ -35,7 +35,9 @@ if (!item) {
 
     contentDiv.innerHTML = `
         <div class="card">
-            <img src="${item.imageUrl}" class="card-img-top">
+            <img src="${item.imageUrl}" 
+     		class="img-fluid mx-auto d-block"
+     		style="max-width: 600px; height: auto;">
             <div class="card-body">
                 <h3>${item.title}</h3>
                 <textarea id="editContent" class="form-control mt-3" rows="6">
