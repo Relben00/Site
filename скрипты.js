@@ -1,100 +1,62 @@
 let items = JSON.parse(localStorage.getItem('galleryItems')) || [];
-let currentFilter = 'all';
-let currentCategory = 'all';
-let isSorted = false;
 
 document.addEventListener('DOMContentLoaded', () => {
-    initButtons();
-    initCategoryFilters();
     renderGallery();
+
+    document.getElementById('addButton')?.addEventListener('click', addItem);
+    document.getElementById('sortButton')?.addEventListener('click', sortItems);
+    document.getElementById('searchBox')?.addEventListener('input', renderGallery);
 });
 
-/* ---------------- КАТЕГОРИИ ---------------- */
+/* ---------- ДОБАВЛЕНИЕ ---------- */
 
-function initCategoryFilters() {
-    document.querySelectorAll('#categoryList a').forEach(link => {
-        link.addEventListener('click', e => {
-            e.preventDefault();
+function addItem() {
+    const title = prompt("Название:");
+    if (!title) return;
 
-            document.querySelectorAll('#categoryList a')
-                .forEach(l => l.classList.remove('active'));
+    const imageUrl = prompt("URL картинки:");
+    if (!imageUrl) return;
 
-            link.classList.add('active');
-            currentCategory = link.dataset.category || 'all';
+    const newItem = {
+        id: Date.now().toString(),
+        title,
+        imageUrl
+    };
 
-            renderGallery();
-        });
-    });
+    items.push(newItem);
+    save();
+    renderGallery();
 }
 
-/* ---------------- КНОПКИ ---------------- */
+/* ---------- СОРТИРОВКА ---------- */
 
-function initButtons() {
-
-    document.getElementById('addButton')?.addEventListener('click', () => {
-        const title = prompt("Название:");
-        const imageUrl = prompt("URL изображения:");
-        if (!title || !imageUrl) return;
-
-        items.push({
-            id: Date.now().toString(),
-            title,
-            imageUrl,
-            content: '',
-            categories: []
-        });
-
-        save();
-        renderGallery();
-    });
-
-    document.getElementById('sortButton')?.addEventListener('click', () => {
-        isSorted = !isSorted;
-        renderGallery();
-    });
-
-    document.getElementById('searchBox')?.addEventListener('input', renderGallery);
+function sortItems() {
+    items.sort((a, b) => a.title.localeCompare(b.title));
+    save();
+    renderGallery();
 }
 
-/* ---------------- ОТОБРАЖЕНИЕ ---------------- */
+/* ---------- ОТОБРАЖЕНИЕ ---------- */
 
 function renderGallery() {
-
     const gallery = document.getElementById('gallery');
+    if (!gallery) return;
+
     gallery.innerHTML = '';
 
-    let displayItems = [...items];
+    let search = document.getElementById('searchBox')?.value.toLowerCase() || '';
 
-    const searchQuery = document.getElementById('searchBox')?.value
-        .toLowerCase()
-        .trim();
+    let filtered = items.filter(item =>
+        item.title.toLowerCase().includes(search)
+    );
 
-    if (searchQuery) {
-        displayItems = displayItems.filter(item =>
-            item.title.toLowerCase().includes(searchQuery)
-        );
-    }
-
-    if (currentCategory !== 'all') {
-        displayItems = displayItems.filter(item =>
-            item.categories?.includes(currentCategory)
-        );
-    }
-
-    if (isSorted) {
-        displayItems.sort((a, b) =>
-            a.title.localeCompare(b.title)
-        );
-    }
-
-    if (displayItems.length === 0) {
+    if (filtered.length === 0) {
         gallery.innerHTML =
             '<div class="col-12 text-center p-5 bg-white rounded">Нет элементов</div>';
         return;
     }
 
-    displayItems.forEach(item => {
-
+    filtered.forEach(item => {
         const col = document.createElement('div');
         col.className = 'col';
 
@@ -108,18 +70,17 @@ function renderGallery() {
             </div>
         `;
 
-        col.querySelector('.delete-btn')
-            .addEventListener('click', () => {
-                items = items.filter(i => i.id !== item.id);
-                save();
-                renderGallery();
-            });
+        col.querySelector('.delete-btn').addEventListener('click', () => {
+            items = items.filter(i => i.id !== item.id);
+            save();
+            renderGallery();
+        });
 
         gallery.appendChild(col);
     });
 }
 
-/* ---------------- СОХРАНЕНИЕ ---------------- */
+/* ---------- СОХРАНЕНИЕ ---------- */
 
 function save() {
     localStorage.setItem('galleryItems', JSON.stringify(items));
